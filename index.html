@@ -1,0 +1,3334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador ESPOCH - Examen Estudiantil</title>
+    <!-- MathJax para renderizar ecuaciones -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2980, #26d0ce);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(90deg, #2c3e50, #4a6491);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .logo {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo img {
+            height: 125px;
+            width: auto;
+        }
+        
+        .timer-container {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 30px;
+            padding: 8px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .timer {
+            font-size: 1.3rem;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            color: #ffcc00;
+        }
+        
+        h1 {
+            margin: 10px 0 5px;
+            font-size: 2.2rem;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        
+        .exam-section {
+            display: flex;
+            min-height: 600px;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background-color: #f8f9fa;
+            border-right: 1px solid #e0e0e0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        .student-info {
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+        
+        .student-info h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+            border-bottom: 2px solid #4a6491;
+            padding-bottom: 8px;
+        }
+        
+        .info-item {
+            display: flex;
+            margin: 8px 0;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            width: 100px;
+        }
+        
+        .section-nav {
+            margin-bottom: 15px;
+        }
+        
+        .section-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #ced4da;
+            font-size: 0.9rem;
+        }
+        
+        .questions-nav {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        
+        .questions-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+        
+        .question-number {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #e9ecef;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            border: 1px solid #ced4da;
+            font-size: 0.75rem;
+        }
+        
+        .question-number:hover {
+            background: #ced4da;
+        }
+        
+        .question-number.active {
+            background: #4a6491;
+            color: white;
+            border-color: #2c3e50;
+        }
+        
+        .question-number.answered {
+            background: #28a745;
+            color: white;
+            border-color: #1e7e34;
+        }
+        
+        .question-number.incorrect {
+            background: #dc3545;
+            color: white;
+            border-color: #bd2130;
+        }
+        
+        .question-number.unanswered {
+            background: #ffc107;
+            color: white;
+            border-color: #d39e00;
+        }
+        
+        .content {
+            flex-grow: 1;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .question-container {
+            flex-grow: 1;
+        }
+        
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 20px;
+        }
+        
+        .question-title {
+            font-size: 1.4rem;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .section-indicator {
+            background: #4a6491;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .question-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #4a6491;
+        }
+        
+        .question-image {
+            max-width: 100%;
+            height: auto;
+            margin: 15px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            display: block;
+        }
+        
+        .math-equation {
+            font-family: 'Times New Roman', serif;
+            font-size: 1.2rem;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .options-container {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .option {
+            display: flex;
+            align-items: flex-start;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .option:hover {
+            background: #f1f3f5;
+            border-color: #ced4da;
+        }
+        
+        .option.selected {
+            background: #e7f4ff;
+            border-color: #4a6491;
+            box-shadow: 0 0 0 3px rgba(74, 100, 145, 0.2);
+        }
+        
+        .option.correct {
+            background: #d4edda;
+            border-color: #28a745;
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+        }
+        
+        .option.incorrect {
+            background: #f8d7da;
+            border-color: #dc3545;
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.2);
+        }
+        
+        .option input {
+            margin-right: 15px;
+            margin-top: 3px;
+        }
+        
+        .option-label {
+            font-weight: bold;
+            margin-right: 10px;
+            min-width: 30px;
+            color: #4a6491;
+        }
+        
+        .option-text {
+            flex: 1;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border-radius: 30px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-prev {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-next {
+            background: #4a6491;
+            color: white;
+        }
+        
+        .btn-submit {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-review {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            background: #e9ecef;
+            color: #adb5bd;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .results-container {
+            padding: 30px;
+            text-align: center;
+            display: none;
+        }
+        
+        .results-box {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .results-title {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        
+        .score-container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .score-box {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .correct-box {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+        }
+        
+        .incorrect-box {
+            background: linear-gradient(135deg, #dc3545, #bd2130);
+        }
+        
+        .score-value {
+            font-size: 2.8rem;
+            line-height: 1;
+        }
+        
+        .score-label {
+            font-size: 1.1rem;
+            text-transform: uppercase;
+        }
+        
+        .sections-results {
+            margin: 30px 0;
+            text-align: left;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .section-result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            margin: 10px 0;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid;
+        }
+        
+        .section-result-item.verbal {
+            border-left-color: #4a6491;
+        }
+        
+        .section-result-item.matematica {
+            border-left-color: #28a745;
+        }
+        
+        .section-result-item.quimica {
+            border-left-color: #17a2b8;
+        }
+        
+        .section-result-item.biologia {
+            border-left-color: #ffc107;
+        }
+        
+        .section-result-item.fisica {
+            border-left-color: #dc3545;
+        }
+        
+        .section-result-item.gestion {
+            border-left-color: #6f42c1;
+        }
+        
+        .section-result-item.ciudadania {
+            border-left-color: #20c997;
+        }
+        
+        .section-result-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .section-result-score {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .restart-btn {
+            background: #4a6491;
+            color: white;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            margin-top: 20px;
+            margin-right: 10px;
+        }
+        
+        .progress-container {
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: #4a6491;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        .login-screen {
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .login-title {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        
+        .login-form {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            text-align: left;
+            max-width: 400px;
+            margin: 0 auto 30px;
+            border-left: 4px solid #4a6491;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .attempts-info {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .slogan-image {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .welcome-screen {
+            padding: 40px;
+            text-align: center;
+            display: none;
+        }
+        
+        .welcome-title {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        
+        .welcome-text {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            max-width: 700px;
+            margin: 0 auto 30px;
+            color: #495057;
+        }
+        
+        .instructions {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            text-align: left;
+            max-width: 700px;
+            margin: 0 auto 30px;
+            border-left: 4px solid #4a6491;
+        }
+        
+        .instructions h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        .start-btn {
+            background: #28a745;
+            color: white;
+            font-size: 1.2rem;
+            padding: 15px 50px;
+            border-radius: 30px;
+            margin-top: 20px;
+        }
+        
+        .review-screen {
+            padding: 30px;
+            display: none;
+        }
+        
+        .review-title {
+            font-size: 2.2rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .review-navigation {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .review-question-number {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .review-question-number.correct {
+            background: #28a745;
+            color: white;
+        }
+        
+        .review-question-number.incorrect {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .review-question-number.unanswered {
+            background: #ffc107;
+            color: white;
+        }
+        
+        .review-question-container {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border-left: 5px solid #4a6491;
+        }
+        
+        .review-question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .review-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .review-status.correct {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .review-status.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .review-status.unanswered {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .answer-explanation {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .answer-explanation h4 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .academic-screen {
+            padding: 30px;
+            display: none;
+        }
+        
+        .academic-title {
+            font-size: 2.2rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .results-table th, .results-table td {
+            border: 1px solid #ddd;
+            padding: 12px 15px;
+            text-align: center;
+        }
+        
+        .results-table th {
+            background-color: #4a6491;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .results-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .results-table tr:hover {
+            background-color: #e9ecef;
+        }
+        
+        .section-score {
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .exam-section {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+            }
+            
+            .questions-grid {
+                grid-template-columns: repeat(10, 1fr);
+            }
+            
+            .logo, .timer-container {
+                position: static;
+                justify-content: left;
+                margin: 10px 0;
+            }
+            
+            .results-table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .score-container {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <img src="logoelite.png" alt="Logo Elite">
+            </div>
+            <h1>SIMULADOR DE EXAMEN</h1>
+            <div class="subtitle">Evaluación de razonamiento</div>
+            <div class="timer-container">
+                <div class="icon">⏱️</div>
+                <div class="timer">150:00</div>
+            </div>
+        </header>
+        
+        <div class="login-screen" id="loginScreen">
+            <img src="slogan.png" alt="Slogan Preuniversitario" class="slogan-image">
+            <h2 class="login-title">Acceso al Simulador de Examen</h2>
+            <div class="login-form">
+                <div class="form-group">
+                    <label for="username">Usuario:</label>
+                    <input type="text" id="username" placeholder="Ingresa tu usuario">
+                </div>
+                <div class="attempts-info" id="attemptsInfo">
+                    Intentos ilimitados por usuario
+                </div>
+                <button class="btn start-btn" id="loginBtn" type="button">
+                    <span class="icon">🔑</span> Ingresar
+                </button>
+            </div>
+        </div>
+        
+        <div class="welcome-screen" id="welcomeScreen">
+            <h2 class="welcome-title">Bienvenido al Simulador de Examen ESPOCH</h2>
+            <div class="welcome-text">
+                <p>Este examen simulado te ayudará a prepararte para tus evaluaciones reales. El test consta de 140 preguntas con un tiempo límite de 150 minutos.</p>
+                <p>Demuestra tus conocimientos y descubre áreas de oportunidad para mejorar.</p>
+            </div>
+            
+            <div class="instructions">
+                <h3>Instrucciones importantes</h3>
+                <ul>
+                    <li><strong>Tiempo total:</strong> 150 minutos para completar el examen</li>
+                    <li><strong>Navegación:</strong> Utiliza los botones "Anterior" y "Siguiente" para moverte entre preguntas</li>
+                    <li><strong>Selección:</strong> Elige solo UNA respuesta por pregunta</li>
+                    <li><strong>Progreso:</strong> Puedes ver tu avance en la barra lateral</li>
+                    <li><strong>Revisión:</strong> Puedes cambiar tus respuestas en cualquier momento antes de finalizar</li>
+                    <li><strong>Finalización:</strong> El examen se enviará automáticamente cuando se agote el tiempo</li>
+                    <li><strong>Resultados:</strong> Al final podrás revisar todas las preguntas con respuestas correctas e incorrectas</li>
+                </ul>
+            </div>
+            
+            <div class="student-info">
+                <div class="info-item">
+                    <div class="info-label">Estudiante:</div>
+                    <div id="displayUserName">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Intento:</div>
+                    <div id="attemptNumber">-</div>
+                </div>
+            </div>
+            
+            <button class="btn start-btn" id="startBtn">
+                <span class="icon">▶️</span> Comenzar Examen
+            </button>
+        </div>
+        
+        <div class="exam-section" id="examSection" style="display: none;">
+            <div class="sidebar">
+                <div class="student-info">
+                    <h3>Información del Estudiante</h3>
+                    <div class="info-item">
+                        <div class="info-label">Nombre:</div>
+                        <div id="displayName">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Intento:</div>
+                        <div id="displayAttempt">-</div>
+                    </div>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                
+                <div class="section-nav">
+                    <div class="section-title">DOMINIO VERBAL (1-20)</div>
+                    <div class="questions-grid" id="section1Grid"></div>
+                </div>
+                <div class="section-nav">
+                    <div class="section-title">DOMINIO MATEMÁTICO (21-40)</div>
+                    <div class="questions-grid" id="section2Grid"></div>
+                </div>
+                <div class="section-nav">
+                    <div class="section-title">QUÍMICA (41-60)</div>
+                    <div class="questions-grid" id="section3Grid"></div>
+                </div>
+                <div class="section-nav">
+                    <div class="section-title">BIOLOGÍA (61-80)</div>
+                    <div class="questions-grid" id="section4Grid"></div>
+                </div>
+                <div class="section-nav">
+                    <div class="section-title">FÍSICA (81-100)</div>
+                    <div class="questions-grid" id="section5Grid"></div>
+                </div>
+                <div class="section-nav">
+                    <div class="section-title">GESTIÓN Y EMPRENDIMIENTO (101-120)</div>
+                    <div class="questions-grid" id="section6Grid"></div>
+                </div>
+                <div class="section-nav">
+                    <div class="section-title">EDUCACIÓN PARA LA CIUDADANÍA (121-140)</div>
+                    <div class="questions-grid" id="section7Grid"></div>
+                </div>
+            </div>
+            
+            <div class="content">
+                <div class="question-container">
+                    <div class="question-header">
+                        <div class="question-title" id="questionTitle">Pregunta #1</div>
+                        <div class="section-indicator" id="sectionIndicator">DOMINIO VERBAL</div>
+                    </div>
+                    
+                    <div class="question-text" id="questionText"></div>
+                    
+                    <div class="options-container" id="optionsContainer"></div>
+                </div>
+                
+                <div class="navigation">
+                    <button class="btn btn-prev" id="prevBtn" disabled>
+                        <span class="icon">◀️</span> Anterior
+                    </button>
+                    <button class="btn btn-next" id="nextBtn">
+                        Siguiente <span class="icon">▶️</span>
+                    </button>
+                    <button class="btn btn-submit" id="submitBtn" style="display: none;">
+                        <span class="icon">📤</span> Finalizar Examen
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="results-container" id="resultsContainer">
+            <div class="results-box">
+                <h2 class="results-title">Resultados del Examen</h2>
+                <div class="student-info">
+                    <div class="info-item">
+                        <div class="info-label">Estudiante:</div>
+                        <div id="resultName">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Intento:</div>
+                        <div id="resultAttempt">-</div>
+                    </div>
+                </div>
+                
+                <div class="score-container">
+                    <div class="score-box correct-box">
+                        <div class="score-value" id="correctCount">0</div>
+                        <div class="score-label">Aciertos</div>
+                    </div>
+                    <div class="score-box incorrect-box">
+                        <div class="score-value" id="incorrectCount">0</div>
+                        <div class="score-label">Errores</div>
+                    </div>
+                </div>
+                
+                <div class="sections-results" id="sectionsResults"></div>
+                
+                <div id="scoreMessage"></div>
+                
+                <div>
+                    <button class="btn btn-review" id="reviewBtn">
+                        <span class="icon">📖</span> Revisar Examen Completo
+                    </button>
+                    <button class="btn restart-btn" id="restartBtn">
+                        <span class="icon">🔄</span> Volver al Inicio
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="review-screen" id="reviewScreen">
+            <h2 class="review-title">Revisión del Examen</h2>
+            <div class="review-navigation" id="reviewNavigation"></div>
+            <div id="reviewQuestionsContainer"></div>
+            <button class="btn restart-btn" id="backToResultsBtn">
+                <span class="icon">🔙</span> Volver a Resultados
+            </button>
+        </div>
+        
+        <div class="academic-screen" id="academicScreen">
+            <h2 class="academic-title">Panel Académico - Resultados de Estudiantes</h2>
+            <div id="academicResults"></div>
+            <button class="btn restart-btn" id="backToLoginBtn">
+                <span class="icon">🔙</span> Volver al Inicio
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        // Lista de usuarios permitidos
+        const allowedUsers = [
+            "0605780477", "0606198018", "0650267933", "0605648575", "1550154395", 
+            "0605549375", "0202178612", "0650142060", "2000133799", "3050248388", 
+            "ALEX", "0605416205", "0606071058", "0503653446", "6699", 
+            "PATOLALLA", "PITER", "ACADEMICO"
+        ];
+
+        // Datos del examen con las 140 preguntas
+        const examData = [
+            // DOMINIO VERBAL (Preguntas 1-20)
+            {
+                id: 1,
+                section: "DOMINIO VERBAL",
+                text: "Ningún idioma es homogéneo, tampoco lo es el español, por ello tiene variedades, que comparten un tronco común, pero cuándo difieren en algunos términos, se conoce como:",
+                options: [
+                    { id: "a", text: "Variación léxica", correct: true },
+                    { id: "b", text: "Variación Morfosintáctica", correct: false },
+                    { id: "c", text: "Variación Sintáctica", correct: false },
+                    { id: "d", text: "Variación Fonética", correct: false }
+                ]
+            },
+            {
+                id: 2,
+                section: "DOMINIO VERBAL",
+                text: "Variación ............ : Un ejemplo de variación en la pronunciación es el ceceo: pronunciar el sonido representado por las letras c y z como interdental.",
+                options: [
+                    { id: "a", text: "Fonética", correct: true },
+                    { id: "b", text: "Léxica", correct: false },
+                    { id: "c", text: "Escrita", correct: false },
+                    { id: "d", text: "Textual", correct: false }
+                ]
+            },
+            {
+                id: 3,
+                section: "DOMINIO VERBAL",
+                text: "Las Variedades lingüísticas diatópicas dependen de:",
+                options: [
+                    { id: "a", text: "La zona geográfica", correct: true },
+                    { id: "b", text: "El medio cultural y social", correct: false },
+                    { id: "c", text: "La situación comunicativa", correct: false },
+                    { id: "d", text: "La relación distante o familiar", correct: false }
+                ]
+            },
+            {
+                id: 4,
+                section: "DOMINIO VERBAL",
+                text: "Dentro del Ecuador, el español también presenta variedades dialectales, entre serranos y costeños, es fácil notar las diferencias al hablar, a estas diferencias las conocemos como:",
+                options: [
+                    { id: "a", text: "Variedades sociales", correct: false },
+                    { id: "b", text: "Variedades diatópicas", correct: true },
+                    { id: "c", text: "Variedad estándar", correct: false },
+                    { id: "d", text: "Variedad diacrónica", correct: false }
+                ]
+            },
+            {
+                id: 5,
+                section: "DOMINIO VERBAL",
+                text: "El español que no observa las variantes lingüísticas de cada país, región o localidad específica, se denomina:",
+                options: [
+                    { id: "a", text: "Formal", correct: false },
+                    { id: "b", text: "Neutro", correct: true },
+                    { id: "c", text: "Culto", correct: false },
+                    { id: "d", text: "Coloquial", correct: false }
+                ]
+            },
+            {
+                id: 6,
+                section: "DOMINIO VERBAL",
+                text: "Los Neologismos se refieren al uso exagerado de palabras nuevas, y que en algunos casos, ingresan al idioma y corresponden a las nuevas tecnologías, modas, alimentos o formas de ver al mundo. Escoge el ejemplo correspondiente:",
+                options: [
+                    { id: "a", text: "Whatsappear", correct: true },
+                    { id: "b", text: "Botín", correct: false },
+                    { id: "c", text: "Cuesco", correct: false },
+                    { id: "d", text: "Aguamanil", correct: false }
+                ]
+            },
+            {
+                id: 7,
+                section: "DOMINIO VERBAL",
+                text: "¿Cómo denominamos a los fenómenos lingüísticos que se hacen en la práctica diaria cuando se habla. Consiste en cambiar los sonidos y estructuras de algunas palabras; sea por adición, por supresión o por la distinta combinación de sonidos?",
+                options: [
+                    { id: "a", text: "Crítica", correct: false },
+                    { id: "b", text: "Editorial", correct: false },
+                    { id: "c", text: "Comentario", correct: false },
+                    { id: "d", text: "Metaplasmos", correct: true }
+                ]
+            },
+            {
+                id: 8,
+                section: "DOMINIO VERBAL",
+                text: "¿De qué manera denominamos a la forma de adición de un fonema en el interior de una palabra, esto es la interacción o adición de un segmento, en general vocálico, en una secuencia fonológica?",
+                options: [
+                    { id: "a", text: "Epéntesis", correct: true },
+                    { id: "b", text: "Prófesis", correct: false },
+                    { id: "c", text: "Paragoge", correct: false },
+                    { id: "d", text: "Aféresis", correct: false }
+                ]
+            },
+            {
+                id: 9,
+                section: "DOMINIO VERBAL",
+                text: "¿Cuál de las siguientes es causa principal de la Diglosia entre el castellano y las lenguas originarias del país?",
+                options: [
+                    { id: "a", text: "Conquista española", correct: true },
+                    { id: "b", text: "Independencia del Ecuador", correct: false },
+                    { id: "c", text: "Fundación de la república", correct: false },
+                    { id: "d", text: "Pueblos originarios del país", correct: false }
+                ]
+            },
+            {
+                id: 10,
+                section: "DOMINIO VERBAL",
+                text: "Los idiomas oficiales de relación intercultural según la Constitución son:",
+                options: [
+                    { id: "a", text: "El español, el Tsáchila y el awá", correct: false },
+                    { id: "b", text: "El castellano, el quichua y el cofán", correct: false },
+                    { id: "c", text: "El castellano, el quichua y el zápara", correct: false },
+                    { id: "d", text: "El castellano, el quichua, y el shuar", correct: true }
+                ]
+            },
+            {
+                id: 11,
+                section: "DOMINIO VERBAL",
+                text: "Una pronunciación más cerrada de los sonidos ere y doble ere en combinación con otras consonantes, corresponde al:",
+                options: [
+                    { id: "a", text: "Plano léxico", correct: false },
+                    { id: "b", text: "Plano fonológico", correct: true },
+                    { id: "c", text: "Plano morfosintáctico", correct: false },
+                    { id: "d", text: "Plano sintáctico", correct: false }
+                ]
+            },
+            {
+                id: 12,
+                section: "DOMINIO VERBAL",
+                text: "La lengua romántica con mayor número de hablantes y goza de prestigio internacional en la actualidad es:",
+                options: [
+                    { id: "a", text: "Inglés", correct: false },
+                    { id: "b", text: "Español", correct: true },
+                    { id: "c", text: "Francés", correct: false },
+                    { id: "d", text: "Italiano", correct: false }
+                ]
+            },
+            {
+                id: 13,
+                section: "DOMINIO VERBAL",
+                text: "Los neologismos del idioma se refieren a:",
+                options: [
+                    { id: "a", text: "Uso exagerado de palabras nuevas", correct: true },
+                    { id: "b", text: "Uso habitual de arcaísmos", correct: false },
+                    { id: "c", text: "Uso exagerado de extranjerismos", correct: false },
+                    { id: "d", text: "Uso temporal de antónimos", correct: false }
+                ]
+            },
+            {
+                id: 14,
+                section: "DOMINIO VERBAL",
+                text: "Determina a la novelista y cuentista que en sus obras las temáticas son diversas y recorren preocupaciones del ser humano: la soledad, la manipulación, el abandono, la manipulación política. A este último tema le ha dedicado una novela completa, Poso Wells.",
+                options: [
+                    { id: "a", text: "Nela Martínez Espinosa", correct: false },
+                    { id: "b", text: "Lucrecia Maldonado", correct: false },
+                    { id: "c", text: "María Fernanda Heredia", correct: false },
+                    { id: "d", text: "Gabriela Alemán", correct: true }
+                ]
+            },
+            {
+                id: 15,
+                section: "DOMINIO VERBAL",
+                text: "Los vicios fonéticos suceden cuándo:",
+                options: [
+                    { id: "a", text: "Se escribe mal una palabra", correct: false },
+                    { id: "b", text: "Se pronuncia mal una palabra", correct: true },
+                    { id: "c", text: "Ocurren anfibologías", correct: false },
+                    { id: "d", text: "Existen ambiguedades en la lectura", correct: false }
+                ]
+            },
+            {
+                id: 16,
+                section: "DOMINIO VERBAL",
+                text: "La cacofonía se refiere a la construcción de frases cuya estructura resulta:",
+                options: [
+                    { id: "a", text: "Agradable a la escucha convencional", correct: false },
+                    { id: "b", text: "En una combinación armónica de sonidos", correct: false },
+                    { id: "c", text: "Desagradable a la escucha convencional", correct: true },
+                    { id: "d", text: "En una redundancia en la redacción", correct: false }
+                ]
+            },
+            {
+                id: 17,
+                section: "DOMINIO VERBAL",
+                text: "Aquellas variedades lingüísticas que se establecen entre la lengua que utilizamos y el medio cultural y social en el que las empleamos, se denominan?",
+                options: [
+                    { id: "a", text: "Variantes diatópicas", correct: false },
+                    { id: "b", text: "Variantes dacrónicas", correct: false },
+                    { id: "c", text: "Variantes diafásicas", correct: false },
+                    { id: "d", text: "Variantes diastráticas", correct: true }
+                ]
+            },
+            {
+                id: 18,
+                section: "DOMINIO VERBAL",
+                text: "El lenguaje que más afecta la comunicación lingüística y que rompe directamente la estructura gramatical se le conoce como:",
+                options: [
+                    { id: "a", text: "Vicios tecnológicos", correct: false },
+                    { id: "b", text: "Vicios sintácticos", correct: true },
+                    { id: "c", text: "Vicios pragmáticos", correct: false },
+                    { id: "d", text: "Vicios semánticos", correct: false }
+                ]
+            },
+            {
+                id: 19,
+                section: "DOMINIO VERBAL",
+                text: "Entre los recursos de precisión semántica tenemos los sinónimos, los mismos que se dividen en:",
+                options: [
+                    { id: "a", text: "Generales y específicos", correct: false },
+                    { id: "b", text: "Totales y gradación", correct: true },
+                    { id: "c", text: "Precisos y generales", correct: false },
+                    { id: "d", text: "Totales y parciales", correct: false }
+                ]
+            },
+            {
+                id: 20,
+                section: "DOMINIO VERBAL",
+                text: "¿De qué manera denominamos a la forma de adición de un fonema en el final de una palabra?",
+                options: [
+                    { id: "a", text: "Epéntesis", correct: false },
+                    { id: "b", text: "Prófesis", correct: false },
+                    { id: "c", text: "Paragoge", correct: true },
+                    { id: "d", text: "Aféresis", correct: false }
+                ]
+            },
+            // DOMINIO MATEMÁTICO (Preguntas 21-40)
+            {
+                id: 21,
+                section: "DOMINIO MATEMÁTICO",
+                text: "La solución de la siguiente operación:",
+                equation: "$$[5 + 3 - (2 + 5) - (1 - 8) + 2] + 10$$",
+                options: [
+                    { id: "a", text: "20", correct: true },
+                    { id: "b", text: "-20", correct: false },
+                    { id: "c", text: "-14", correct: false },
+                    { id: "d", text: "14", correct: false }
+                ]
+            },
+            {
+                id: 22,
+                section: "DOMINIO MATEMÁTICO",
+                text: "Aplicando productos notables, la solución de la siguiente expresión es:",
+                equation: "$$\\left( \\frac{\\sqrt{16}}{2}a - 5b \\right)^{2}$$",
+                options: [
+                    { id: "a", text: "4a^{2} + 20ab + 25b^{2}", correct: false },
+                    { id: "b", text: "4a^{2} - 20ab + 25b^{2}", correct: true },
+                    { id: "c", text: "4a^{2} - 20ab - 25b^{2}", correct: false },
+                    { id: "d", text: "4a^{2} + 20ab - 25b^{2}", correct: false }
+                ]
+            },
+            {
+                id: 23,
+                section: "DOMINIO MATEMÁTICO",
+                text: "Aplicando productos notables, la solución de la siguiente expresión es:",
+                equation: "$$\\left[ \\left( x^{2} + y^{4} \\right)^{3} - x^{6} - y^{12} \\right]^{2}$$",
+                options: [
+                    { id: "a", text: "9x^{8}y^{8} - 18x^{6}y^{12} - 9x^{4}y^{16}", correct: false },
+                    { id: "b", text: "9x^{8}y^{8} + 18x^{6}y^{12} - 9x^{4}y^{16}", correct: false },
+                    { id: "c", text: "9x^{8}y^{8} + 18x^{6}y^{12} + 9x^{4}y^{16}", correct: true },
+                    { id: "d", text: "9x^{8}y^{8} - 18x^{6}y^{12} + 9x^{4}y^{16}", correct: false }
+                ]
+            },
+            {
+                id: 24,
+                section: "DOMINIO MATEMÁTICO",
+                text: "El resultado de la siguiente multiplicación es:",
+                equation: "$$\\left( x^{3} - 1 - x^{2} \\right)\\left( x^{2} + x^{3} + 1 \\right)$$",
+                options: [
+                    { id: "a", text: "x^{6} - x^{4} - 2x^{2} - 1", correct: true },
+                    { id: "b", text: "x^{6} - x^{4} + 2x^{2} + 1", correct: false },
+                    { id: "c", text: "x^{6} + x^{4} - 2x^{2} + 1", correct: false },
+                    { id: "d", text: "x^{6} + x^{4} + 2x^{2} + 1", correct: false }
+                ]
+            },
+            {
+                id: 25,
+                section: "DOMINIO MATEMÁTICO",
+                text: "El resultado del binomio al cubo es:",
+                equation: "$$(3x + 5y)^{3}$$",
+                options: [
+                    { id: "a", text: "9x^{3} + 135x^{2}y + 225xy^{2} + 125y^{3}", correct: false },
+                    { id: "b", text: "9x^{3} + 225x^{2}y + 135xy^{2} + 125y^{3}", correct: false },
+                    { id: "c", text: "27x^{3} + 135x^{2}y + 225xy^{2} + 125y^{3}", correct: true },
+                    { id: "d", text: "27x^{3} + 135x^{2}y + 225xy^{2} + 25y^{3}", correct: false }
+                ]
+            },
+            {
+                id: 26,
+                section: "DOMINIO MATEMÁTICO",
+                text: "El resultado de simplificar la expresión es:",
+                equation: "$$\\frac{(x - 1)}{(x + 3)^{2}} \\cdot \\frac{(x - 2)}{(x - 1)^{3}} \\cdot \\frac{(x + 3)^{3}}{\\left( \\sqrt{x - 2} \\right)^{2}}$$",
+                options: [
+                    { id: "a", text: "\\frac{(x + 3)}{(x - 1)}", correct: false },
+                    { id: "b", text: "\\frac{(x + 3)}{(x - 1)^{2}}", correct: true },
+                    { id: "c", text: "\\frac{(x + 3)^{2}}{(x - 1)}", correct: false },
+                    { id: "d", text: "\\frac{(x + 3)^{2}}{(x - 1)^{2}}", correct: false }
+                ]
+            },
+            {
+                id: 27,
+                section: "DOMINIO MATEMÁTICO",
+                text: "El resultado de simplificar la expresión es:",
+                equation: "$$\\frac{12a^{2}b^{4}c^{5}}{36b^{2}c^{4}} \\cdot \\frac{a^{3}}{4b^{3}c^{2}}$$",
+                options: [
+                    { id: "a", text: "\\frac{a^{4}}{12b^{2}c}", correct: false },
+                    { id: "b", text: "\\frac{a^{5}}{12b^{2}c^{3}}", correct: false },
+                    { id: "c", text: "\\frac{a^{4}}{12b^{2}c^{3}}", correct: false },
+                    { id: "d", text: "\\frac{a^{5}}{12bc}", correct: true }
+                ]
+            },
+            {
+                id: 28,
+                section: "DOMINIO MATEMÁTICO",
+                text: "El resultado de simplificar la expresión es:",
+                equation: "$$\\frac{x^{2} + 5x + 6}{(x + 3)(x + 2)} \\cdot \\frac{x + 3}{(2x + 6)(x + 4)^{2}} \\cdot (x + 4)(x + 4)$$",
+                options: [
+                    { id: "a", text: "\\frac{1}{16}", correct: false },
+                    { id: "b", text: "\\frac{1}{8}", correct: false },
+                    { id: "c", text: "\\frac{1}{2}", correct: true },
+                    { id: "d", text: "\\frac{1}{4}", correct: false }
+                ]
+            },
+            {
+                id: 29,
+                section: "DOMINIO MATEMÁTICO",
+                text: "Los valores de las variables x que satisfacen simultáneamente el sistema de ecuaciones:",
+                equation: "$$\\begin{cases} 3x + y = 4 \\\\ y = 2 \\end{cases}$$",
+                options: [
+                    { id: "a", text: "x = -\\frac{1}{3}", correct: false },
+                    { id: "b", text: "x = \\frac{2}{3}", correct: true },
+                    { id: "c", text: "x = \\frac{1}{3}", correct: false },
+                    { id: "d", text: "x = -\\frac{2}{3}", correct: false }
+                ]
+            },
+            {
+                id: 30,
+                section: "DOMINIO MATEMÁTICO",
+                text: "Los valores de las variables x,y que satisfacen simultáneamente el sistema de ecuaciones:",
+                equation: "$$\\begin{cases} 6x - 5y = -9 \\\\ 4x + 3y = 13 \\end{cases}$$",
+                options: [
+                    { id: "a", text: "x = 1 \\quad y = 3", correct: true },
+                    { id: "b", text: "x = -1 \\quad y = 3", correct: false },
+                    { id: "c", text: "x = 1 \\quad y = -3", correct: false },
+                    { id: "d", text: "x = -1 \\quad y = -3", correct: false }
+                ]
+            },
+            {
+                id: 31,
+                section: "DOMINIO MATEMÁTICO",
+                text: "El valor de x que satisface la ecuación es:",
+                equation: "$$\\frac{2x - 8}{5} - \\frac{x}{2} = \\frac{4x - 1}{10}$$",
+                options: [
+                    { id: "a", text: "x = -3", correct: true },
+                    { id: "b", text: "x = 5", correct: false },
+                    { id: "c", text: "x = 8", correct: false },
+                    { id: "d", text: "x = -2", correct: false }
+                ]
+            },
+            {
+                id: 32,
+                section: "DOMINIO MATEMÁTICO",
+                text: "El valor de x que satisface la ecuación es:",
+                equation: "$$\\sqrt{x - 4} = 3$$",
+                options: [
+                    { id: "a", text: "x = 13", correct: true },
+                    { id: "b", text: "x = 11", correct: false },
+                    { id: "c", text: "x = 5", correct: false },
+                    { id: "d", text: "x = -6", correct: false }
+                ]
+            },
+            {
+                id: 33,
+                section: "DOMINIO MATEMÁTICO",
+                text: "Los valores de las variables x,y,z que satisfacen simultáneamente el sistema de ecuaciones:",
+                equation: "$$\\begin{cases} x + y + z = 3 \\\\ 2y + z = 2 \\\\ z = 1 \\end{cases}$$",
+                options: [
+                    { id: "a", text: "x = \\frac{3}{2} \\quad y = \\frac{1}{2} \\quad z = 1", correct: true },
+                    { id: "b", text: "x = -\\frac{3}{2} \\quad y = \\frac{1}{2} \\quad z = 1", correct: false },
+                    { id: "c", text: "x = -\\frac{2}{3} \\quad y = \\frac{1}{2} \\quad z = 1", correct: false },
+                    { id: "d", text: "x = -\\frac{2}{3} \\quad y = \\frac{1}{2} \\quad z = -1", correct: false }
+                ]
+            },
+            {
+                id: 34,
+                section: "DOMINIO MATEMÁTICO",
+                text: "Los valores de las variables x,y que satisfacen simultáneamente el sistema de ecuaciones:",
+                equation: "$$\\begin{cases} 2x + 3y = 6 \\\\ x + 2y = 3 \\end{cases}$$",
+                options: [
+                    { id: "a", text: "x = 3 \\quad y = 0", correct: true },
+                    { id: "b", text: "x = 0 \\quad y = 3", correct: false },
+                    { id: "c", text: "x = -3 \\quad y = 0", correct: false },
+                    { id: "d", text: "x = -3 \\quad y = 1", correct: false }
+                ]
+            },
+            {
+                id: 35,
+                section: "DOMINIO MATEMÁTICO",
+                text: "Los valores de las variables y,z que satisfacen simultáneamente el sistema de ecuaciones:",
+                equation: "$$\\begin{cases} x = 2 \\\\ y = -3 + 2x + 3z \\\\ 6x + 3z = 21 \\end{cases}$$",
+                options: [
+                    { id: "a", text: "y = 10 \\quad z = 3", correct: true },
+                    { id: "b", text: "y = 8 \\quad z = -2", correct: false },
+                    { id: "c", text: "y = 3 \\quad z = 3", correct: false },
+                    { id: "d", text: "y = -8 \\quad z = -2", correct: false }
+                ]
+            },
+            {
+                id: 36,
+                section: "DOMINIO MATEMÁTICO",
+                text: "Los valores de las variables x,y que satisfacen simultáneamente el sistema de ecuaciones:",
+                equation: "$$\\begin{cases} \\sqrt{\\sqrt{x + y}} = 2 \\\\ \\frac{1}{2}x - \\frac{1}{3}y = -4 \\end{cases}$$",
+                options: [
+                    { id: "a", text: "x = \\frac{8}{5} \\quad y = \\frac{72}{5}", correct: true },
+                    { id: "b", text: "x = -\\frac{8}{5} \\quad y = \\frac{72}{5}", correct: false },
+                    { id: "c", text: "x = \\frac{8}{5} \\quad y = -\\frac{72}{5}", correct: false },
+                    { id: "d", text: "x = \\frac{4}{5} \\quad y = -\\frac{72}{5}", correct: false }
+                ]
+            },
+            {
+                id: 37,
+                section: "DOMINIO MATEMÁTICO",
+                text: "Dada la siguiente inecuación, el intervalo solución es:",
+                equation: "$$2x + 3(2x + 1) > 2x - 5$$",
+                options: [
+                    { id: "a", text: "\\left] -\\frac{4}{3}, +\\infty \\right[", correct: true },
+                    { id: "b", text: "\\left[ \\frac{4}{3}, +\\infty \\right[", correct: false },
+                    { id: "c", text: "\\left] -\\infty, -\\frac{4}{3} \\right[", correct: false },
+                    { id: "d", text: "\\left] -\\infty, \\frac{4}{3} \\right]", correct: false }
+                ]
+            },
+            {
+                id: 38,
+                section: "DOMINIO MATEMÁTICO",
+                text: "Dada la siguiente inecuación, el intervalo solución es:",
+                equation: "$$3x + 2(3x + 1) - 3 + 2x < 2 + 3x - 1$$",
+                options: [
+                    { id: "a", text: "\\left] -\\frac{1}{4}, +\\infty \\right[", correct: false },
+                    { id: "b", text: "\\left[ \\frac{1}{4}, +\\infty \\right[", correct: false },
+                    { id: "c", text: "\\left] -\\infty, \\frac{1}{4} \\right[", correct: true },
+                    { id: "d", text: "\\left] -\\infty, -\\frac{1}{4} \\right]", correct: false }
+                ]
+            },
+            {
+                id: 39,
+                section: "DOMINIO MATEMÁTICO",
+                text: "Dada la siguiente inecuación:",
+                equation: "$$\\frac{-x - 1}{10} - \\frac{3(x - 1)}{5} < \\frac{-2x + 3}{15} - 3$$",
+                options: [
+                    { id: "a", text: "\\left] \\frac{99}{17}, +\\infty \\right[", correct: true },
+                    { id: "b", text: "\\left] \\frac{99}{15}, +\\infty \\right[", correct: false },
+                    { id: "c", text: "\\left] 99, +\\infty \\right[", correct: false },
+                    { id: "d", text: "\\left] -99, +\\infty \\right[", correct: false }
+                ]
+            },
+            {
+                id: 40,
+                section: "DOMINIO MATEMÁTICO",
+                text: "Los valores de x que satisfacen la inecuación son:",
+                equation: "$$\\frac{2x - 1}{10} - \\frac{3(x - 1)}{5} > \\frac{6x + 3}{15} - 3$$",
+                options: [
+                    { id: "a", text: "\\left] -\\infty, \\frac{33}{8} \\right[", correct: true },
+                    { id: "b", text: "\\left] -\\infty, -\\frac{33}{8} \\right[", correct: false },
+                    { id: "c", text: "\\left] \\frac{33}{8}, +\\infty \\right[", correct: false },
+                    { id: "d", text: "\\left] -\\frac{33}{8}, +\\infty \\right[", correct: false }
+                ]
+            },
+            // QUÍMICA (Preguntas 41-60)
+            {
+                id: 41,
+                section: "QUÍMICA",
+                text: "¿Qué propiedad de los epóxidos los hace solubles en alcohol, éter y benceno?",
+                options: [
+                    { id: "a", text: "elevada reactividad", correct: false },
+                    { id: "b", text: "Son polares", correct: true },
+                    { id: "c", text: "alta tensión en su anillo", correct: false },
+                    { id: "d", text: "Tienen puntos de ebullición menores que los alcoholes", correct: false }
+                ]
+            },
+            {
+                id: 42,
+                section: "QUÍMICA",
+                text: "Si una grasa o un aceite se calienta se produce una hidrólisis del grupo éster ¿cómo se conoce a este proceso?",
+                options: [
+                    { id: "a", text: "saponificación", correct: true },
+                    { id: "b", text: "fusión", correct: false },
+                    { id: "c", text: "solidificación", correct: false },
+                    { id: "d", text: "carbonatación", correct: false }
+                ]
+            },
+            {
+                id: 43,
+                section: "QUÍMICA",
+                text: "El nombre del siguiente compuesto CH₃COO-CH₃ es:",
+                options: [
+                    { id: "a", text: "etanoato de metilo", correct: true },
+                    { id: "b", text: "propanoato de etilo", correct: false },
+                    { id: "c", text: "etil propil éter", correct: false },
+                    { id: "d", text: "metanol etanol éter", correct: false }
+                ]
+            },
+            {
+                id: 44,
+                section: "QUÍMICA",
+                text: "El nombre del siguiente compuesto CH₃CH₂COO-CH₂CH₃ es:",
+                options: [
+                    { id: "a", text: "propanoato de etilo", correct: true },
+                    { id: "b", text: "etanoato de etilo", correct: false },
+                    { id: "c", text: "butanol", correct: false },
+                    { id: "d", text: "metanol etanol éter", correct: false }
+                ]
+            },
+            {
+                id: 45,
+                section: "QUÍMICA",
+                text: "El nombre del siguiente compuesto CH₃CH₂CH₂COO-CH₃ es:",
+                options: [
+                    { id: "a", text: "butanoato de metilo", correct: true },
+                    { id: "b", text: "etanoato de etilo", correct: false },
+                    { id: "c", text: "butanol", correct: false },
+                    { id: "d", text: "etanodiol éter", correct: false }
+                ]
+            },
+            {
+                id: 46,
+                section: "QUÍMICA",
+                text: "Seleccione el enunciado que describa de donde se derivan las aminas",
+                options: [
+                    { id: "a", text: "Las aminas se derivan del amoníaco, NH₃, por sustitución de átomos de H por grupos alquilo o arilo", correct: true },
+                    { id: "b", text: "Las aminas se derivan del amoníaco, NH₂, por sustitución de átomos de H por grupos alquilo o arilo", correct: false },
+                    { id: "c", text: "Las aminas se derivan del amoníaco, N por sustitución de átomos de H por grupos alquilo o arilo", correct: false },
+                    { id: "d", text: "Las aminas se derivan del amoníaco, NH₃, por sustitución de átomos de C por grupos alquilo o arilo", correct: false }
+                ]
+            },
+            {
+                id: 47,
+                section: "QUÍMICA",
+                text: "Seleccione la respuesta correcta: ¿Qué propiedad le corresponde a un compuesto orgánico?",
+                options: [
+                    { id: "a", text: "Son inestables al calor", correct: true },
+                    { id: "b", text: "Son solubles en agua", correct: false },
+                    { id: "c", text: "Son estables al calor", correct: false },
+                    { id: "d", text: "Son insolubles en solventes apolares", correct: false }
+                ]
+            },
+            {
+                id: 48,
+                section: "QUÍMICA",
+                text: "Seleccione la respuesta correcta: ¿Qué propiedad le corresponde a un compuesto orgánico?",
+                options: [
+                    { id: "a", text: "Son solubles en contacto con solventes no polares", correct: true },
+                    { id: "b", text: "Son estables al calor", correct: false },
+                    { id: "c", text: "Son solubles en agua", correct: false },
+                    { id: "d", text: "Son insolubles en solventes apolares", correct: false }
+                ]
+            },
+            {
+                id: 49,
+                section: "QUÍMICA",
+                text: "¿Qué propiedad le corresponde a un compuesto orgánico?",
+                options: [
+                    { id: "a", text: "Los compuestos por lo general tienen pesos moleculares altos", correct: true },
+                    { id: "b", text: "Son estables al calor", correct: false },
+                    { id: "c", text: "Sus pesos moleculares son bajos", correct: false },
+                    { id: "d", text: "Son insolubles en solventes apolares", correct: false }
+                ]
+            },
+            {
+                id: 50,
+                section: "QUÍMICA",
+                text: "¿Qué propiedad le corresponde a un compuesto orgánico?",
+                options: [
+                    { id: "a", text: "Generalmente contienen enlaces covalentes", correct: true },
+                    { id: "b", text: "Son estables al calor", correct: false },
+                    { id: "c", text: "Generalmente contienen enlaces iónicos", correct: false },
+                    { id: "d", text: "Son insolubles en solventes apolares", correct: false }
+                ]
+            },
+            {
+                id: 51,
+                section: "QUÍMICA",
+                text: "¿Qué propiedad le corresponde a un compuesto inorgánico?",
+                options: [
+                    { id: "a", text: "Son solubles agua", correct: true },
+                    { id: "b", text: "Son inestables al calor", correct: false },
+                    { id: "c", text: "Son insolubles en agua", correct: false },
+                    { id: "d", text: "Son solubles en contacto con solventes no polares", correct: false }
+                ]
+            },
+            {
+                id: 52,
+                section: "QUÍMICA",
+                text: "¿Como se llaman los enlaces sencillos?",
+                options: [
+                    { id: "a", text: "Sigma", correct: true },
+                    { id: "b", text: "Pi", correct: false },
+                    { id: "c", text: "Doble", correct: false },
+                    { id: "d", text: "Triple", correct: false }
+                ]
+            },
+            {
+                id: 53,
+                section: "QUÍMICA",
+                text: "En la hibridación sp³:",
+                options: [
+                    { id: "a", text: "su geometría molecular es tetraédrica y su estructura forma un enlace de 109,5°", correct: true },
+                    { id: "b", text: "su geometría molecular es tetraédrica y su estructura forma un enlace de 120,0°", correct: false },
+                    { id: "c", text: "su geometría molecular es tetraédrica y su estructura forma un enlace de 180,0°", correct: false },
+                    { id: "d", text: "su geometría molecular es tetraédrica y su estructura forma un enlace de 100,0°", correct: false }
+                ]
+            },
+            {
+                id: 54,
+                section: "QUÍMICA",
+                text: "En la siguiente molécula señala el número total de enlaces σ (sigma) y π (pi) que contiene:",
+                image: "SE2P54.png",
+                options: [
+                    { id: "a", text: "17 sigma y 4 pi", correct: true },
+                    { id: "b", text: "15 sigma y 6 pi", correct: false },
+                    { id: "c", text: "16 sigma y 5 pi", correct: false },
+                    { id: "d", text: "18 sigma y 3 pi", correct: false }
+                ]
+            },
+            {
+                id: 55,
+                section: "QUÍMICA",
+                text: "El número másico del carbono es de 12, por tanto, tiene:",
+                options: [
+                    { id: "a", text: "5 protones y 7 neutrones en núcleo", correct: false },
+                    { id: "b", text: "6 protones y 6 neutrones en el núcleo", correct: true },
+                    { id: "c", text: "7 protones y 5 neutrones en el núcleo", correct: false },
+                    { id: "d", text: "8 protones y 4 neutrones en el núcleo", correct: false }
+                ]
+            },
+            {
+                id: 56,
+                section: "QUÍMICA",
+                text: "El compuesto orgánico más pequeño del carbono es el:",
+                options: [
+                    { id: "a", text: "Etano", correct: false },
+                    { id: "b", text: "Propano", correct: false },
+                    { id: "c", text: "Hexano", correct: false },
+                    { id: "d", text: "metano", correct: true }
+                ]
+            },
+            {
+                id: 57,
+                section: "QUÍMICA",
+                text: "¿A qué periodo de la tabla periódica pertenece el carbono?",
+                options: [
+                    { id: "a", text: "1", correct: false },
+                    { id: "b", text: "2", correct: true },
+                    { id: "c", text: "3", correct: false },
+                    { id: "d", text: "4", correct: false }
+                ]
+            },
+            {
+                id: 58,
+                section: "QUÍMICA",
+                text: "El enlace del átomo de carbono donde se comparten 2 pares de electrones es:",
+                image: "SE2P58.png",
+                options: [
+                    { id: "a", text: "enlace simple", correct: false },
+                    { id: "b", text: "enlace doble", correct: true },
+                    { id: "c", text: "enlace triple", correct: false },
+                    { id: "d", text: "enlace aromático", correct: false }
+                ]
+            },
+            {
+                id: 59,
+                section: "QUÍMICA",
+                text: "Según la estructura seleccione que tipo de enlace que se forma entre los átomos de carbono:",
+                options: [
+                    { id: "a", text: "enlace simple", correct: false },
+                    { id: "b", text: "enlace doble", correct: true },
+                    { id: "c", text: "enlace triple", correct: false },
+                    { id: "d", text: "enlace aromático", correct: false }
+                ]
+            },
+            {
+                id: 60,
+                section: "QUÍMICA",
+                text: "Indique el nombre de la cadena en la cual tenemos enlace doble:",
+                options: [
+                    { id: "a", text: "1,3 -- Butadiino", correct: false },
+                    { id: "b", text: "1,2-Butadieno", correct: true },
+                    { id: "c", text: "2,3- butano", correct: false },
+                    { id: "d", text: "Butano", correct: false }
+                ]
+            },
+            // BIOLOGÍA (Preguntas 61-80)
+            {
+                id: 61,
+                section: "BIOLOGÍA",
+                text: "¿Cuál de las siguientes estructuras del Esqueleto Axial es un hueso impar y central en la parte anterior del cráneo?",
+                options: [
+                    { id: "a", text: "Vómer", correct: true },
+                    { id: "b", text: "Mandíbula", correct: false },
+                    { id: "c", text: "Hueso hioides", correct: false },
+                    { id: "d", text: "Etmoides", correct: false }
+                ]
+            },
+            {
+                id: 62,
+                section: "BIOLOGÍA",
+                text: "¿Qué hueso forma la articulación del codo junto con el húmero y el radio?",
+                options: [
+                    { id: "a", text: "Cúbito", correct: true },
+                    { id: "b", text: "Radio", correct: false },
+                    { id: "c", text: "Húmero", correct: false },
+                    { id: "d", text: "Escápula", correct: false }
+                ]
+            },
+            {
+                id: 63,
+                section: "BIOLOGÍA",
+                text: "¿Qué hueso del pie es el más grande y soporta el peso del cuerpo al caminar?",
+                options: [
+                    { id: "a", text: "Astrágalo", correct: false },
+                    { id: "b", text: "Calcáneo", correct: true },
+                    { id: "c", text: "Cuboides", correct: false },
+                    { id: "d", text: "Escafoides", correct: false }
+                ]
+            },
+            {
+                id: 64,
+                section: "BIOLOGÍA",
+                text: "¿Cuál de las siguientes funciones del Sistema Óseo es vital para la producción de células sanguíneas?",
+                options: [
+                    { id: "a", text: "Almacenamiento de minerales", correct: false },
+                    { id: "b", text: "Protección de órganos internos", correct: false },
+                    { id: "c", text: "Locomoción y movimiento", correct: false },
+                    { id: "d", text: "Hematopoyesis en la médula ósea roja", correct: true }
+                ]
+            },
+            {
+                id: 65,
+                section: "BIOLOGÍA",
+                text: "Al realizar un cruce entre dos heterocigotos (Aa x Aa) en la descendencia (F2) obtenemos la proporción fenotípica siguiente:",
+                options: [
+                    { id: "a", text: "9:3:3:1", correct: false },
+                    { id: "b", text: "3:1", correct: true },
+                    { id: "c", text: "3:1:3", correct: false },
+                    { id: "d", text: "2:1", correct: false }
+                ]
+            },
+            {
+                id: 66,
+                section: "BIOLOGÍA",
+                text: "¿Cuál de los siguientes factores es indispensable para la regulación del volumen de aire inspirado y espirado durante la respiración?",
+                options: [
+                    { id: "a", text: "La temperatura corporal atmosférica", correct: false },
+                    { id: "b", text: "El diámetro de los bronquios", correct: true },
+                    { id: "c", text: "La concentración de oxígeno en el aire", correct: false },
+                    { id: "d", text: "La concentración de oxígeno en el aire atmosférico", correct: false }
+                ]
+            },
+            {
+                id: 67,
+                section: "BIOLOGÍA",
+                text: "¿Qué estructura anatómica está especializada en el intercambio de gases entre el aire y la sangre en el sistema respiratorio?",
+                options: [
+                    { id: "a", text: "Bronquiolos", correct: false },
+                    { id: "b", text: "Alvéolos", correct: true },
+                    { id: "c", text: "Tráquea", correct: false },
+                    { id: "d", text: "Bronquios principales", correct: false }
+                ]
+            },
+            {
+                id: 68,
+                section: "BIOLOGÍA",
+                text: "¿Cuál de los siguientes factores afecta principalmente la capacidad vital de los pulmones?",
+                options: [
+                    { id: "a", text: "Frecuencia respiratoria", correct: false },
+                    { id: "b", text: "Tamaño corporal", correct: true },
+                    { id: "c", text: "Tensión superficial alveolar", correct: false },
+                    { id: "d", text: "Volumen residual", correct: false }
+                ]
+            },
+            {
+                id: 69,
+                section: "BIOLOGÍA",
+                text: "Señale la respuesta correcta en relación a la gametogénesis femenina:",
+                options: [
+                    { id: "a", text: "Las células precursoras se llaman ovocitos primarios", correct: false },
+                    { id: "b", text: "Cada ovocito primario se divide por mitosis originando las vogónias", correct: false },
+                    { id: "c", text: "Los ovocitos dan lugar al núcleo que tiene la mayor parte de citoplasma", correct: false },
+                    { id: "d", text: "Los ovocitos dan lugar al núcleo y otras dos células más pequeñas, los corpúsculos polares", correct: true }
+                ]
+            },
+            {
+                id: 70,
+                section: "BIOLOGÍA",
+                text: "Señale la respuesta correcta en relación a la espermatogénesis masculina en los vertebrados:",
+                options: [
+                    { id: "a", text: "Las células precursoras se denominan espermatogonias y son aploides", correct: false },
+                    { id: "b", text: "Después de la meiosis se obtienen dos espermátidas que son aploides", correct: false },
+                    { id: "c", text: "Cada espermatida dará lugar a un espermatozoide después de un proceso llamado diferenciación", correct: true },
+                    { id: "d", text: "Cada espermatogonia da lugar a dos espermatozoides", correct: false }
+                ]
+            },
+            {
+                id: 71,
+                section: "BIOLOGÍA",
+                text: "¿Qué tipo de tejido muscular es multinucleado?",
+                options: [
+                    { id: "a", text: "Músculo liso", correct: false },
+                    { id: "b", text: "Músculo estriado", correct: true },
+                    { id: "c", text: "Músculo cardiaco", correct: false },
+                    { id: "d", text: "Músculo de órganos huecos", correct: false }
+                ]
+            },
+            {
+                id: 72,
+                section: "BIOLOGÍA",
+                text: "¿Qué componente de una célula muscular almacena iones de calcio necesarios para la contracción muscular?",
+                options: [
+                    { id: "a", text: "Mitocondrias", correct: false },
+                    { id: "b", text: "Sarcolema", correct: false },
+                    { id: "c", text: "Retículo sarcoplásmico", correct: true },
+                    { id: "d", text: "Aparato de Golgi", correct: false }
+                ]
+            },
+            {
+                id: 73,
+                section: "BIOLOGÍA",
+                text: "¿Cuántas cavidades tiene el interior del corazón?",
+                options: [
+                    { id: "a", text: "Dos: superior e inferior derecha", correct: false },
+                    { id: "b", text: "Tres: aurícula izquierda, ventrículo izquierdo y aurícula", correct: false },
+                    { id: "c", text: "Cuatro: dos aurículas y dos ventrículos", correct: true },
+                    { id: "d", text: "Cinco: uno central y cuatro periféricos", correct: false }
+                ]
+            },
+            {
+                id: 74,
+                section: "BIOLOGÍA",
+                text: "¿Cómo se comunican la aurícula izquierda y el ventrículo izquierdo en el corazón?",
+                options: [
+                    { id: "a", text: "A través de la válvula mitral", correct: true },
+                    { id: "b", text: "A través de la válvula tricúspide", correct: false },
+                    { id: "c", text: "Directamente sin válvulas", correct: false },
+                    { id: "d", text: "No hay comunicación entre ellos", correct: false }
+                ]
+            },
+            {
+                id: 75,
+                section: "BIOLOGÍA",
+                text: "¿Dónde ocurre el proceso de intercambio de gases en el sistema circulatorio?",
+                options: [
+                    { id: "a", text: "Venas", correct: false },
+                    { id: "b", text: "Arterias", correct: false },
+                    { id: "c", text: "Capilares", correct: true },
+                    { id: "d", text: "Cámaras del origen", correct: false }
+                ]
+            },
+            {
+                id: 76,
+                section: "BIOLOGÍA",
+                text: "¿En el origen de las especies, la teoría catastrofista fue defendida por?",
+                options: [
+                    { id: "a", text: "Charles Darwin", correct: false },
+                    { id: "b", text: "Jean Baptiste", correct: false },
+                    { id: "c", text: "Georges Cuvier", correct: true }
+                ]
+            },
+            {
+                id: 77,
+                section: "BIOLOGÍA",
+                text: "¿El gradualismo y el puntualismo en el origen de las especies son teorías?",
+                options: [
+                    { id: "a", text: "Conservacionistas", correct: false },
+                    { id: "b", text: "evolucionistas", correct: true },
+                    { id: "c", text: "ninguna de las anteriores", correct: false }
+                ]
+            },
+            {
+                id: 78,
+                section: "BIOLOGÍA",
+                text: "Cuáles son los dos componentes del medio interno en los animales?",
+                options: [
+                    { id: "a", text: "Hemolinfa y plasma", correct: false },
+                    { id: "b", text: "Líquido intersticial y líquido circulante", correct: true },
+                    { id: "c", text: "Hemoglobina y hemocianina", correct: false },
+                    { id: "d", text: "Linfa y sangre", correct: false }
+                ]
+            },
+            {
+                id: 79,
+                section: "BIOLOGÍA",
+                text: "¿Cómo se mueve la hemolinfa en el sistema circulatorio de los artrópodos?",
+                options: [
+                    { id: "a", text: "A través de vasos sanguíneos", correct: false },
+                    { id: "b", text: "Por contracción muscular del corazón", correct: false },
+                    { id: "c", text: "Por el sistema linfático", correct: true },
+                    { id: "d", text: "Al extenderse por los tejidos directamente", correct: false }
+                ]
+            },
+            {
+                id: 80,
+                section: "BIOLOGÍA",
+                text: "¿Cuál es el componente principal de las membranas plasmáticas?",
+                options: [
+                    { id: "a", text: "Carbohidratos", correct: false },
+                    { id: "b", text: "Proteínas", correct: false },
+                    { id: "c", text: "Lípidos", correct: true },
+                    { id: "d", text: "Ácidos Nucleicos", correct: false }
+                ]
+            },
+            // FÍSICA (Preguntas 81-100)
+            {
+                id: 81,
+                section: "FÍSICA",
+                text: "El módulo del desplazamiento es igual a la distancia recorrida cuando: El vector desplazamiento es igual que _______",
+                options: [
+                    { id: "a", text: "La trayectoria", correct: true },
+                    { id: "b", text: "La velocidad", correct: false },
+                    { id: "c", text: "La rapidez", correct: false },
+                    { id: "d", text: "La aceleración", correct: false }
+                ]
+            },
+            {
+                id: 82,
+                section: "FÍSICA",
+                text: "Si la trayectoria y el desplazamiento no son iguales podemos afirmar que la distancia recorrida es _______ que el módulo del desplazamiento.",
+                options: [
+                    { id: "a", text: "Mayor", correct: true },
+                    { id: "b", text: "Menor", correct: false },
+                    { id: "c", text: "Igual", correct: false },
+                    { id: "d", text: "Paralela", correct: false }
+                ]
+            },
+            {
+                id: 83,
+                section: "FÍSICA",
+                text: "Un dron vuela a una velocidad constante en dirección norte. Al mismo tiempo, sopla un viento en dirección este. ¿Cuál es la dirección y velocidad del dron con relación a un observador en reposo fuera del viento?",
+                options: [
+                    { id: "a", text: "La dirección del avión será norte y su velocidad será la misma que la velocidad del viento", correct: false },
+                    { id: "b", text: "La dirección del avión será este y su velocidad será la misma que la velocidad del viento", correct: false },
+                    { id: "c", text: "La dirección del avión será noreste y su velocidad será mayor que la velocidad del viento", correct: true },
+                    { id: "d", text: "La dirección del avión será noroeste y su velocidad será mayor que la velocidad del viento", correct: false }
+                ]
+            },
+            {
+                id: 84,
+                section: "FÍSICA",
+                text: "El movimiento es _______, ya que el estado de ___________ o reposo de un cuerpo depende del ___________ elegido",
+                options: [
+                    { id: "a", text: "relativo; movimiento; sistema de referencia", correct: true },
+                    { id: "b", text: "sistema de referencia; relativo; movimiento", correct: false },
+                    { id: "c", text: "relativo; sistema de referencia; movimiento", correct: false },
+                    { id: "d", text: "sistema de referencia; movimiento; relativo", correct: false }
+                ]
+            },
+            {
+                id: 85,
+                section: "FÍSICA",
+                text: "La _________ de un móvil representa la rapidez con que varía su velocidad.",
+                options: [
+                    { id: "a", text: "Distancia", correct: false },
+                    { id: "b", text: "Posición", correct: false },
+                    { id: "c", text: "Aceleración", correct: true },
+                    { id: "d", text: "Dirección", correct: false }
+                ]
+            },
+            {
+                id: 86,
+                section: "FÍSICA",
+                text: "Determinar el desplazamiento de una partícula que se mueve desde el punto A hasta el punto B:",
+                image: "SE2P86.png",
+                options: [
+                    { id: "a", text: "\\Delta\\vec{r} = (0\\vec{i} - 20\\vec{j}) m", correct: true },
+                    { id: "b", text: "\\Delta\\vec{r} = (0\\vec{i} + 20\\vec{j}) m", correct: false },
+                    { id: "c", text: "\\Delta\\vec{r} = (20\\vec{i} - 20\\vec{j}) m", correct: false },
+                    { id: "d", text: "\\Delta\\vec{r} = (20\\vec{i} + 20\\vec{j}) m", correct: false }
+                ]
+            },
+            {
+                id: 87,
+                section: "FÍSICA",
+                text: "Determinar según el siguiente gráfico que tipo de trayectoria describe un móvil que pasa por los puntos [A-H]",
+                image: "SE2P87.png",
+                options: [
+                    { id: "a", text: "Elíptica", correct: false },
+                    { id: "b", text: "Irregular", correct: false },
+                    { id: "c", text: "Parabólica", correct: true },
+                    { id: "d", text: "Circular", correct: false }
+                ]
+            },
+            {
+                id: 88,
+                section: "FÍSICA",
+                text: "Un buque cisterna, el cual transporta 500000 galones de combustible se moviliza 2626 millas náuticas desde Texas hasta la refinería en Esmeraldas, el tiempo estimado de llegada del combustible al país es de 6 días. Calcular el módulo de la velocidad media en km/h",
+                options: [
+                    { id: "a", text: "v_{m} = 9,77\\frac{km}{h}", correct: false },
+                    { id: "b", text: "v_{m} = 17,77\\frac{km}{h}", correct: false },
+                    { id: "c", text: "v_{m} = 25,77\\frac{km}{h}", correct: false },
+                    { id: "d", text: "v_{m} = 33,77\\frac{km}{h}", correct: true }
+                ]
+            },
+            {
+                id: 89,
+                section: "FÍSICA",
+                text: "En el gráfico se indica la posición de un móvil en un instante de tiempo. ¿Cuál es esa posición en el punto F?",
+                image: "SE2P89.png",
+                options: [
+                    { id: "a", text: "(-3,4)", correct: false },
+                    { id: "b", text: "(-5,3)", correct: false },
+                    { id: "c", text: "(-1,5)", correct: true },
+                    { id: "d", text: "(-4,5)", correct: false }
+                ]
+            },
+            {
+                id: 90,
+                section: "FÍSICA",
+                text: "Determinar la distancia recorrida de una partícula representada su trayectoria o movimiento de A hasta B en la siguiente gráfica.",
+                image: "SE2P90.png",
+                options: [
+                    { id: "a", text: "d = (55 + 10\\pi)m", correct: true },
+                    { id: "b", text: "d = (55 - 10\\pi)m", correct: false },
+                    { id: "c", text: "d = (10 + 55\\pi)m", correct: false },
+                    { id: "d", text: "d = (10 - 55\\pi)m", correct: false }
+                ]
+            },
+            {
+                id: 91,
+                section: "FÍSICA",
+                text: "Se deja caer un objeto desde una torre de 0.5km. Calcular el tiempo y la velocidad alcanzada al tocar el suelo. Considere la g=10 m/s².",
+                options: [
+                    { id: "a", text: "t = 10\\ s;\\quad v_{f} = 100\\frac{m}{s}", correct: true },
+                    { id: "b", text: "t = 9\\ s;\\quad v_{f} = 90\\frac{m}{s}", correct: false },
+                    { id: "c", text: "t = 11\\ s;\\quad v_{f} = 110\\frac{m}{s}", correct: false },
+                    { id: "d", text: "t = 12\\ s;\\quad v_{f} = 120\\frac{m}{s}", correct: false }
+                ]
+            },
+            {
+                id: 92,
+                section: "FÍSICA",
+                text: "Un objeto de 10 kg se encuentra en reposo en una superficie plana y horizontal. Si se aplica una fuerza horizontal de 50 N durante 5 segundos, ¿cuál es la velocidad final del objeto? Recuerde la fórmula: $$v_{f} = v_{i} + at$$",
+                options: [
+                    { id: "a", text: "15\\frac{m}{s}", correct: false },
+                    { id: "b", text: "25\\frac{m}{s}", correct: true },
+                    { id: "c", text: "20\\frac{m}{s}", correct: false },
+                    { id: "d", text: "10\\frac{m}{s}", correct: false }
+                ]
+            },
+            {
+                id: 93,
+                section: "FÍSICA",
+                text: "Un coche de juguete se mueve a velocidad constante a lo largo de una pista circular con un radio de 2 metros. Si la velocidad angular del coche de juguete es de 1 radian por segundo, ¿cuál de las siguientes conclusiones se puede extraer del movimiento circular uniforme del coche de juguete?",
+                options: [
+                    { id: "a", text: "La velocidad lineal del coche de juguete es directamente proporcional a su velocidad angular", correct: true },
+                    { id: "b", text: "La velocidad angular del coche de juguete es directamente proporcional a su periodo", correct: false },
+                    { id: "c", text: "La velocidad lineal del coche de juguete es inversamente proporcional a su velocidad angular", correct: false },
+                    { id: "d", text: "La velocidad lineal del coche de juguete es inversamente proporcional al radio de la trayectoria circular", correct: false }
+                ]
+            },
+            {
+                id: 94,
+                section: "FÍSICA",
+                text: "¿Cuál es la relación entre la velocidad tangencial (v) y la velocidad angular (ω) de un objeto en movimiento circular uniforme?",
+                options: [
+                    { id: "a", text: "v = \\omega^{2}", correct: false },
+                    { id: "b", text: "v = \\omega r", correct: true },
+                    { id: "c", text: "v = \\frac{\\omega}{r}", correct: false },
+                    { id: "d", text: "v = \\omega r^{2}", correct: false }
+                ]
+            },
+            {
+                id: 95,
+                section: "FÍSICA",
+                text: "Un pequeño objeto se mueve en una trayectoria circular de radio 3 metros con una velocidad constante de 4 metros por segundo. ¿Cuál es la velocidad angular del objeto?",
+                options: [
+                    { id: "a", text: "6,25\\ \\frac{m}{s}", correct: false },
+                    { id: "b", text: "1,33\\ \\frac{rad}{s}", correct: true },
+                    { id: "c", text: "25\\ \\frac{m}{s}", correct: false },
+                    { id: "d", text: "1,99\\ \\frac{rad}{s}", correct: false }
+                ]
+            },
+            {
+                id: 96,
+                section: "FÍSICA",
+                text: "Un disco de vinilo tiene un radio de 0,15 m y la aceleración centrípeta en su borde es de $$0,9\\frac{m}{s^{2}}$$ . Determinar la velocidad lineal en el borde del disco.",
+                options: [
+                    { id: "a", text: "0,37\\ \\frac{m}{s}", correct: true },
+                    { id: "b", text: "0,74\\frac{m}{s}", correct: false },
+                    { id: "c", text: "0,19\\ \\frac{m}{s}", correct: false },
+                    { id: "d", text: "1,85\\ \\frac{m}{s}", correct: false }
+                ]
+            },
+            {
+                id: 97,
+                section: "FÍSICA",
+                text: "¿Cuál de las siguientes afirmaciones es verdadera sobre el movimiento parabólico?",
+                options: [
+                    { id: "a", text: "Es un tipo de movimiento rectilíneo", correct: false },
+                    { id: "b", text: "Es un tipo de movimiento circular", correct: false },
+                    { id: "c", text: "Es un tipo de movimiento que combina el movimiento horizontal y el movimiento vertical", correct: true },
+                    { id: "d", text: "Es un tipo de movimiento que combina el movimiento circular y el movimiento vertical", correct: false }
+                ]
+            },
+            {
+                id: 98,
+                section: "FÍSICA",
+                text: "Un jugador de béisbol lanza una pelota con una velocidad inicial de 20 m/s en un ángulo de 30° grados con respecto a la horizontal. La pelota es capturada por otro jugador a la misma altura. Calcular el tiempo total que la pelota estuvo en el aire, utilizar como valor de la aceleración de la gravedad $$g = 9,81\\frac{m}{s^{2}}$$",
+                options: [
+                    { id: "a", text: "1,32 s", correct: false },
+                    { id: "b", text: "2,04 s", correct: true },
+                    { id: "c", text: "3,24 s", correct: false },
+                    { id: "d", text: "4,43 s", correct: false }
+                ]
+            },
+            {
+                id: 99,
+                section: "FÍSICA",
+                text: "Calcular la velocidad inicial con la que se disparó un proyectil con un ángulo de 65° desde lo alto de un acantilado de 1500 m de altura y alcanzó una altura máxima de 2000 m, medidos desde el suelo, utilizar como valor de la aceleración de la gravedad $$9,81\\frac{m}{s^{2}}$$.",
+                options: [
+                    { id: "a", text: "120,23\\frac{m}{s}", correct: false },
+                    { id: "b", text: "114,34\\frac{m}{s}", correct: false },
+                    { id: "c", text: "109,28\\frac{m}{s}", correct: true },
+                    { id: "d", text: "103,64\\frac{m}{s}", correct: false }
+                ]
+            },
+            {
+                id: 100,
+                section: "FÍSICA",
+                text: "Encontrar la componente horizontal de la velocidad con la fue disparado un proyectil que impacto en un blanco ubicado a 100 m si este fue disparado con una velocidad inicial de 50 m/s a un ángulo θ grados con respecto a la horizontal, utilizar como valor de la aceleración de la gravedad g=9,81 m/s².",
+                options: [
+                    { id: "a", text: "42,67\\frac{m}{s}", correct: false },
+                    { id: "b", text: "48,99\\ \\frac{m}{s}", correct: true },
+                    { id: "c", text: "53,67\\ \\frac{m}{s}", correct: false },
+                    { id: "d", text: "58,99\\ \\frac{m}{s}", correct: false }
+                ]
+            },
+            // GESTIÓN Y EMPRENDIMIENTO (Preguntas 101-120)
+            {
+                id: 101,
+                section: "GESTIÓN Y EMPRENDIMIENTO",
+                text: "En la segmentación de mercado; para empresas tenemos el aspecto actividad empresarial que se define como la división:",
+                options: [
+                    { id: "a", text: "Del mercado en tipo de empresa, actividades específicas", correct: true },
+                    { id: "b", text: "Del tipo de productos o servicios que produce", correct: false },
+                    { id: "c", text: "Del mercado según la magnitud de producción en la empresa", correct: false },
+                    { id: "d", text: "Según las actividades empresariales que realizan los emprendimiento del sector", correct: false }
+                ]
+            },
+            {
+                id: 102,
+                section: "GESTIÓN Y EMPRENDIMIENTO",
+                text: "Según las seguridad y salud en un emprendimiento debe poseer asistencia médica y farmacéutica como:",
+                options: [
+                    { id: "a", text: "Conservar en el lugar de trabajo un botiquín con medicamentos indispensables para sus trabajadores", correct: true },
+                    { id: "b", text: "Constar de áreas de relajación para los trabajadores", correct: false },
+                    { id: "c", text: "Contar un botiquín con medicamentos siempre que el número de trabajadores sea grande", correct: false },
+                    { id: "d", text: "Conservar en el lugar de trabajo espacio amplios para evitar enfermedades laborales", correct: false }
+                ]
+            },
+            {
+                id: 103,
+                section: "GESTIÓN Y EMPRENDIMIENTO",
+                text: "En la seguridad y salud en un emprendimiento conocemos lo que es un comité paritario que se conforma del:",
+                options: [
+                    { id: "a", text: "Representante de los departamentos de la empresa, de los proveedores y de los clientes", correct: false },
+                    { id: "b", text: "Representante de las áreas afectadas, los intermediarios, y los afectados en la empresa", correct: false },
+                    { id: "c", text: "Representante del patrono, de los trabajadores, del IESS y de Ministerio de Trabajo", correct: true },
+                    { id: "d", text: "Círculo de personas afectadas por el consumo de los productos de la empresa, en su respaldo con personal de control", correct: false }
+                ]
+            },
+            {
+                id: 104,
+                section: "GESTIÓN Y EMPRENDIMIENTO",
+                text: "En emprendimiento y gestión tenemos el punto de equilibrio que se menciona como:",
+                options: [
+                    { id: "a", text: "Al nivel de ingresos y gastos que son utilizados para la elaboración de un producto de la empresa", correct: false },
+                    { id: "b", text: "Al nivel de ventas necesario para que se cubran los costos y gastos del emprendimiento", correct: true },
+                    { id: "c", text: "Al punto medio entre las necesidades y utilidades que se obtiene por la venta de un bien o servicio", correct: false },
+                    { id: "d", text: "Las fortalezas y debilidades que tiene la empresa para enfrentar el mercado y los competidores", correct: false }
+                ]
+            },
+            {
+                id: 105,
+                section: "GESTIÓN Y EMPRENDIMIENTO",
+                text: "Al iniciar un emprendimiento: las ventas son bajas por lo que sostiene a la empresa en ese tiempo es:",
+                options: [
+                    { id: "a", text: "El capital inicial de trabajo sostendrá los costos y los gastos en esta etapa", correct: true },
+                    { id: "b", text: "Las aportaciones de los accionistas durante el tiempo inicial de esta etapa", correct: false },
+                    { id: "c", text: "El capital obtenido por la venta de los productos sin incluir la utilidad", correct: false },
+                    { id: "d", text: "El monto designado para de depósito para integración del capital", correct: false }
+                ]
+            },
+            {
+                id: 106,
+                section: "GESTIÓN Y EMPRENDIMIENTO",
+                text: "El contenido del proyecto de inversión es:",
+                options: [
+                    { id: "a", text: "Plan de negocios, Plan de precio, Plan de marketing, Evaluación del mercado, Evaluación estructural del emprendimiento", correct: false },
+                    { id: "b", text: "Resumen ejecutivo, Descripción del emprendimiento, Plan operacional, Plan comunicacional, Plan financiero, Evaluación del proyecto", correct: true },
+                    { id: "c", text: "Investigación del entorno, plan de marketing, Plan de negociación, Plan económico, Evaluación del mercado", correct: false },
+                    { id: "d", text: "Investigación de recursos, Estructura del mercado, Estructura Organizacional, Plan objetivo, plan de mercado, Plan de Negocios", correct: false }
+                ]
+            },
+            {
+                id: 107,
+                section: "GESTIÓN Y EMPRENDIMIENTO",
+                text: "Como parte del contenido del Proyecto de Inversión tenemos el Plan operacional que se conceptualiza por:",
+                options: [
+                    { id: "a", text: "Incluye una proyección de las principales planificaciones a realizar en la elaboración del emprendimiento", correct: false },
+                    { id: "b", text: "Se compone de la investigación de mercado la estructura del mercado actual", correct: false },
+                    { id: "c", text: "Incluye la proyección de los financiamientos futuros a realizar para mantener a flote el emprendimiento", correct: false },
+                    { id: "d", text: "Incluye una explicación de los procesos de producción o prestación de servicios necesarios para cubrir una necesidad insatisfecha", correct: true }
+                ]
+            },
+            {
+                id: 108,
+                section: "GESTIÓN Y EMPRENDIMIENTO",
+                text: "Como parte del contenido del Proyecto de Inversión tenemos el Plan financiero que se conceptualiza por:",
+                options: [
+                    { id: "a", text: "Incluir un cronograma de gastos y utilidades que representara el emprendimiento en su funcionamiento", correct: false },
+                    { id: "b", text: "Incluir la proyección de los ingresos y los egresos del proyecto; determina el margen de contribución y el punto de equilibrio", correct: true },
+                    { id: "c", text: "Incluir el precio y costos que tendrá cada producto que el emprendimiento vaya a poner a disposición del mercado", correct: false },
+                    { id: "d", text: "Realizar la evaluación objetiva e integral del proyecto en sus componentes cuantitativos y cualitativos y el análisis de riesgos", correct: false }
+                ]
+            },
+            {
+                id: 109,
+                section: "GESTIÓN Y EMPRENDIMIENTO",
+                text: "De cuantos bloques se compone un modelo de negocio:",
+                options: [
+                    { id: "a", text: "7 bloques", correct: false },
+                    { id: "b", text: "10 bloques", correct: false },
+                    { id: "c", text: "9 bloques", correct: true },
+                    { id: "d", text: "12 bloques", correct: false }
+                ]
+            },
+            {
+                id: 110,
+                section: "GESTIÓN Y EMPRENDIMIENTO",
+                text: "Complete: Modelo de Negocio se trata de un instrumento que facilita la _______________ con el Modelo de Negocio Canvas, creado por Alexander Osterwalder, que entiende a la empresa como un todo.",
+                options: [
+                    { id: "a", text: "Calidad y el trabajo", correct: false },
+                    { id: "b", text: "Aptitud y el trabajo", correct: false },
+                    { id: "c", text: "Comprensión y el análisis", correct: true },
+                    { id: "d", text: "Comprensión y el trabajo", correct: false }
+                ]
+            },
+            {
+                id: 111,
+                section: "GESTIÓN Y EMPRENDIMIENTO",
+                text: "Concepto de Propuesta de valor, dentro de un modelo de negocio:",
+                options: [
+                    { id: "a", text: "Es el problema que solucionamos al distribuidor con nuestro producto o servicio", correct: false },
+                    { id: "b", text: "Es el problema que solucionamos al cliente con nuestro producto o servicio", correct: true },
+                    { id: "c", text: "Es el problema que solucionamos al asesor con nuestro producto o servicio", correct: false },
+                    { id: "d", text: "Es el problema que solucionamos al gerente con nuestro producto o servicio", correct: false }
+                ]
+            },
+            {
+                id: 112,
+                section: "GESTIÓN Y EMPRENDIMIENTO",
+                text: "Concepto de Relaciones con el consumidor, dentro de un modelo de negocio:",
+                options: [
+                    { id: "a", text: "Cómo hacer que el cliente se enamore de nuestra propuesta", correct: true },
+                    { id: "b", text: "Cómo hacer que el proveedor se enamore de nuestra propuesta", correct: false },
+                    { id: "c", text: "Cómo hacer que el gerente se enamore de nuestra propuesta", correct: false },
+                    { id: "d", text: "Cómo hacer que el supervisor de mercado se enamore de nuestra propuesta", correct: false }
+                ]
+            },
+            {
+                id: 113,
+                section: "GESTIÓN Y EMPRENDIMIENTO",
+                text: "Complete: Para la _________ la Seguridad y Salud Ocupacional lo define como el conjunto de actividades que se pueden realizar para controlar y prevenir problemas que puedan afectar negativamente la salud de todos los trabajadores de una empresa, sea pública o privada.",
+                options: [
+                    { id: "a", text: "Organización de las Naciones Unidas (ONU)", correct: false },
+                    { id: "b", text: "Organización Internacional del Trabajo (OIT)", correct: true },
+                    { id: "c", text: "Organización Mundial de la Salud (OMS)", correct: false },
+                    { id: "d", text: "Organización Mundial del Turismo (OMT)", correct: false }
+                ]
+            },
+            {
+                id: 114,
+                section: "GESTIÓN Y EMPRENDIMIENTO",
+                text: "Que debe cumplir un trabajador, para que su trabajo sea sano y seguro:",
+                options: [
+                    { id: "a", text: "Normas", correct: false },
+                    { id: "b", text: "Condiciones ergonómicas", correct: true },
+                    { id: "c", text: "Reglamentos", correct: false },
+                    { id: "d", text: "Condiciones físicas", correct: false }
+                ]
+            },
+            {
+                id: 115,
+                section: "GESTIÓN Y EMPRENDIMIENTO",
+                text: "Qué debe ofrecer el empleador, para asegurar la salud y seguridad a todos los trabajadores:",
+                options: [
+                    { id: "a", text: "Las mejores condiciones en sus instalaciones", correct: true },
+                    { id: "b", text: "Las mejores condiciones en sus habitaciones", correct: false },
+                    { id: "c", text: "Las mejores condiciones en sus bodegas", correct: false },
+                    { id: "d", text: "Las mejores condiciones en sus canchas deportivas", correct: false }
+                ]
+            },
+            {
+                id: 116,
+                section: "GESTIÓN Y EMPRENDIMIENTO",
+                text: "Complete: Los _______________ deben protegerse y cuidarse de forma muy consciente para evitar enfermedades, accidentes y riesgos innecesarios. Por lo tanto, es su obligación acatar las instrucciones de la empresa al respecto.",
+                options: [
+                    { id: "a", text: "Accionistas", correct: false },
+                    { id: "b", text: "Trabajadores", correct: true },
+                    { id: "c", text: "Empresarios", correct: false },
+                    { id: "d", text: "Proveedores", correct: false }
+                ]
+            },
+            {
+                id: 117,
+                section: "GESTIÓN Y EMPRENDIMIENTO",
+                text: "Cual es la dirección departamental que surge como parte de los derechos del trabajo y protección:",
+                options: [
+                    { id: "a", text: "Dirección de Seguridad y Asistencia Social", correct: false },
+                    { id: "b", text: "Dirección de Protección Social", correct: false },
+                    { id: "c", text: "Dirección de Seguridad y Salud en el Trabajo", correct: true },
+                    { id: "d", text: "Dirección de Asistencia Humanitaria", correct: false }
+                ]
+            },
+            {
+                id: 118,
+                section: "GESTIÓN Y EMPRENDIMIENTO",
+                text: "Cual es la visión de la Seguridad y Salud ocupacional en el Ecuador:",
+                options: [
+                    { id: "a", text: "Ser líderes en salvaguardia de la integridad, la salud y la vida de las personas trabajadoras", correct: true },
+                    { id: "b", text: "Ser líderes en salvaguardia de la integridad, la salud y la vida de las personas proveedoras", correct: false },
+                    { id: "c", text: "Ser líderes en salvaguardia de la integridad, la salud y la vida de las personas contratistas", correct: false },
+                    { id: "d", text: "Ser líderes en salvaguardia de la integridad, la salud y la vida de las personas compradoras", correct: false }
+                ]
+            },
+            {
+                id: 119,
+                section: "GESTIÓN Y EMPRENDIMIENTO",
+                text: "Cuando hablamos de ESTADISTICA, la tabulación es:",
+                options: [
+                    { id: "a", text: "La reubicación de datos obtenidos por la investigación de mercado", correct: false },
+                    { id: "b", text: "La codificación y transcripción de los datos obtenidos en la investigación de mercado", correct: true },
+                    { id: "c", text: "La eliminación de datos innecesarios recabados durante la investigación de campo", correct: false },
+                    { id: "d", text: "Los elementos utilizados para recabar la información de un área en específica", correct: false }
+                ]
+            },
+            {
+                id: 120,
+                section: "GESTIÓN Y EMPRENDIMIENTO",
+                text: "En estadística básica la mayoría de veces se utilizan preguntas cerradas que son:",
+                options: [
+                    { id: "a", text: "Aquellas cuya respuesta es concreta o consiste en escoger entre varias alternativas planteadas", correct: true },
+                    { id: "b", text: "Aquella cuyas respuestas son variables acordes a la opinión del encuestado", correct: false },
+                    { id: "c", text: "Preguntas con respuestas positivas o negativas según el pensamiento del encuestado", correct: false },
+                    { id: "d", text: "Son aquella cuya respuesta es concreta y se escoge solamente una opción", correct: false }
+                ]
+            },
+            // EDUCACIÓN PARA LA CIUDADANÍA (Preguntas 121-140)
+            {
+                id: 121,
+                section: "EDUCACIÓN PARA LA CIUDADANÍA",
+                text: "¿Cuál es la función principal de la democracia representativa?",
+                options: [
+                    { id: "a", text: "Elegir representantes para administrar el Estado según principios electorales", correct: true },
+                    { id: "b", text: "Despojar a los ciudadanos de su poder para beneficiar a las élites políticas", correct: false },
+                    { id: "c", text: "Permitir que la ciudadanía administre directamente el Estado", correct: false },
+                    { id: "d", text: "Facilitar la elección de gobernantes sin responsabilidades específicas", correct: false }
+                ]
+            },
+            {
+                id: 122,
+                section: "EDUCACIÓN PARA LA CIUDADANÍA",
+                text: "¿Qué ocurre cuando la sociedad elige a sus representantes?",
+                options: [
+                    { id: "a", text: "La sociedad crea un pacto social que legitima el poder de las autoridades", correct: true },
+                    { id: "b", text: "La sociedad pierde su capacidad de influencia en la política", correct: false },
+                    { id: "c", text: "La sociedad se convierte en víctima de sus representantes", correct: false },
+                    { id: "d", text: "La sociedad retiene todo el poder para sí misma", correct: false }
+                ]
+            },
+            {
+                id: 123,
+                section: "EDUCACIÓN PARA LA CIUDADANÍA",
+                text: "Cuál grupo étnico del Ecuador tiene una cultura patriarcal a nivel social",
+                options: [
+                    { id: "a", text: "Indígenas", correct: true },
+                    { id: "b", text: "Mestizos", correct: false },
+                    { id: "c", text: "Montubios", correct: false },
+                    { id: "d", text: "Afroecuatorianos", correct: false }
+                ]
+            },
+            {
+                id: 124,
+                section: "EDUCACIÓN PARA LA CIUDADANÍA",
+                text: "El Consejo Nacional Electoral (CNE) es el organismo encargado de:",
+                options: [
+                    { id: "a", text: "Organizar, dirigir, vigilar y garantizar de manera transparente los procesos electorales, la convocatoria a elecciones, la proclamación de resultados y la posesión de los ganadores", correct: true },
+                    { id: "b", text: "Coordinar que las elecciones se desarrollen sin inconvenientes solamente en el Ecuador Continental", correct: false },
+                    { id: "c", text: "Proporcionar seguridad en los recintos electorales", correct: false },
+                    { id: "d", text: "Evitar que los candidatos hagan fraude electoral en los recintos electorales", correct: false }
+                ]
+            },
+            {
+                id: 125,
+                section: "EDUCACIÓN PARA LA CIUDADANÍA",
+                text: "La instancia máxima de la función de Transparencia y Control social es:",
+                options: [
+                    { id: "a", text: "El Consejo de Participación Ciudadana", correct: true },
+                    { id: "b", text: "La Contraloría General del estado", correct: false },
+                    { id: "c", text: "El Comité de Coordinación", correct: false },
+                    { id: "d", text: "La Coordinación General del Estado", correct: false }
+                ]
+            },
+            {
+                id: 126,
+                section: "EDUCACIÓN PARA LA CIUDADANÍA",
+                text: "La soberanía radica en el pueblo, hay división de poderes y gobernantes electos. Esto describe:",
+                options: [
+                    { id: "a", text: "Monarquía", correct: false },
+                    { id: "b", text: "Mandante", correct: false },
+                    { id: "c", text: "Republicanismo", correct: true },
+                    { id: "d", text: "Rey", correct: false }
+                ]
+            },
+            {
+                id: 127,
+                section: "EDUCACIÓN PARA LA CIUDADANÍA",
+                text: "Los derechos civiles:",
+                options: [
+                    { id: "a", text: "Desarrollo personal", correct: false },
+                    { id: "b", text: "Trabajo digno", correct: false },
+                    { id: "c", text: "Vida e integridad", correct: false },
+                    { id: "d", text: "Todas", correct: true }
+                ]
+            },
+            {
+                id: 128,
+                section: "EDUCACIÓN PARA LA CIUDADANÍA",
+                text: "Los jueces del país son electos por:",
+                options: [
+                    { id: "a", text: "Consejo de la Judicatura", correct: true },
+                    { id: "b", text: "CNE", correct: false },
+                    { id: "c", text: "Tribunal Contencioso", correct: false },
+                    { id: "d", text: "Tribunal de Garantías Constitucionales", correct: false }
+                ]
+            },
+            {
+                id: 129,
+                section: "EDUCACIÓN PARA LA CIUDADANÍA",
+                text: "Institución que controla la actuación de los jueces:",
+                options: [
+                    { id: "a", text: "Consejo de la Judicatura", correct: true },
+                    { id: "b", text: "CNE", correct: false },
+                    { id: "c", text: "Tribunal Contencioso", correct: false },
+                    { id: "d", text: "Tribunal de Garantías Constitucionales", correct: false }
+                ]
+            },
+            {
+                id: 130,
+                section: "EDUCACIÓN PARA LA CIUDADANÍA",
+                text: "Función del Consejo de la Judicatura:",
+                options: [
+                    { id: "a", text: "Definir y ejecutar políticas de modernización del sistema judicial", correct: true },
+                                        { id: "b", text: "Investigación corrupción", correct: false },
+                    { id: "c", text: "Tramitar juicios políticos", correct: false },
+                    { id: "d", text: "Emitir sentencias", correct: false }
+                ]
+            },
+            {
+                id: 131,
+                section: "EDUCACIÓN PARA LA CIUDADANÍA",
+                text: "La Defensoría Pública y Fiscalía General del Estado son:",
+                options: [
+                    { id: "a", text: "Órganos autónomos de la Función Judicial", correct: true },
+                    { id: "b", text: "Dependientes de la Función Judicial", correct: false },
+                    { id: "c", text: "Parte de Presidencia", correct: false },
+                    { id: "d", text: "Parte de Contraloría", correct: false }
+                ]
+            },
+            {
+                id: 132,
+                section: "EDUCACIÓN PARA LA CIUDADANÍA",
+                text: "Institución encargada de investigación preprocesal y procesal penal:",
+                options: [
+                    { id: "a", text: "Fiscalía", correct: true },
+                    { id: "b", text: "Criminalística", correct: false },
+                    { id: "c", text: "Corte Penal", correct: false },
+                    { id: "d", text: "Contraloría", correct: false }
+                ]
+            },
+            {
+                id: 133,
+                section: "EDUCACIÓN PARA LA CIUDADANÍA",
+                text: "Función que controla entidades públicas y privadas con eficiencia y equidad:",
+                options: [
+                    { id: "a", text: "Legislativa", correct: false },
+                    { id: "b", text: "Electoral", correct: false },
+                    { id: "c", text: "Judicial", correct: false },
+                    { id: "d", text: "Transparencia y Control Social", correct: true }
+                ]
+            },
+            {
+                id: 134,
+                section: "EDUCACIÓN PARA LA CIUDADANÍA",
+                text: "Entidad parte de la Función de Transparencia y Control Social:",
+                options: [
+                    { id: "a", text: "Fiscalía", correct: false },
+                    { id: "b", text: "IESS", correct: false },
+                    { id: "c", text: "Defensoría del Pueblo", correct: true },
+                    { id: "d", text: "Consejo de la Judicatura", correct: false }
+                ]
+            },
+            {
+                id: 135,
+                section: "EDUCACIÓN PARA LA CIUDADANÍA",
+                text: "¿Por cuántos consejeros está integrado el CPCCS?",
+                options: [
+                    { id: "a", text: "Cinco", correct: false },
+                    { id: "b", text: "Siete", correct: true },
+                    { id: "c", text: "Seis", correct: false },
+                    { id: "d", text: "Nueve", correct: false }
+                ]
+            },
+            {
+                id: 136,
+                section: "EDUCACIÓN PARA LA CIUDADANÍA",
+                text: "Tiempo para elegir presidente de la Función de Transparencia y Control Social:",
+                options: [
+                    { id: "a", text: "Cada cuatro años", correct: false },
+                    { id: "b", text: "Cada año", correct: false },
+                    { id: "c", text: "Cada cinco años", correct: true },
+                    { id: "d", text: "Cada seis meses", correct: false }
+                ]
+            },
+            {
+                id: 137,
+                section: "EDUCACIÓN PARA LA CIUDADANÍA",
+                text: "Las Superintendencias se especializan en:",
+                options: [
+                    { id: "a", text: "Control de recursos estatales", correct: false },
+                    { id: "b", text: "Protección de derechos", correct: false },
+                    { id: "c", text: "Vigilancia y control de actividades económicas y sociales", correct: true },
+                    { id: "d", text: "Inspección de ingresos y gastos", correct: false }
+                ]
+            },
+            {
+                id: 138,
+                section: "EDUCACIÓN PARA LA CIUDADANÍA",
+                text: "La soberanía en Ecuador radica en el pueblo y se ejerce mediante:",
+                options: [
+                    { id: "a", text: "La Constitución", correct: true },
+                    { id: "b", text: "Las leyes", correct: false },
+                    { id: "c", text: "Consejo de Participación Ciudadana", correct: false },
+                    { id: "d", text: "Libertad de movilización", correct: false }
+                ]
+            },
+            {
+                id: 139,
+                section: "EDUCACIÓN PARA LA CIUDADANÍA",
+                text: "Alcanzar igualdad social es posible cuando:",
+                options: [
+                    { id: "a", text: "No superamos individualismo", correct: false },
+                    { id: "b", text: "Población accede a derechos plenos", correct: true },
+                    { id: "c", text: "Pensamos solo en nosotros", correct: false },
+                    { id: "d", text: "Generamos oportunidades solo para algunos", correct: false }
+                ]
+            },
+            {
+                id: 140,
+                section: "EDUCACIÓN PARA LA CIUDADANÍA",
+                text: "Reforma Agraria de 1964 convirtió a los indígenas en:",
+                options: [
+                    { id: "a", text: "Propietarios de sus tierras", correct: false },
+                    { id: "b", text: "Compradores", correct: true },
+                    { id: "c", text: "Vendedores", correct: false },
+                    { id: "d", text: "Deudores", correct: false }
+                ]
+            }
+        ];
+
+        // Variables globales
+        let currentQuestion = 0;
+        let studentAnswers = {};
+        let timeLeft = 150 * 60; // 150 minutos en segundos
+        let timerInterval;
+        let currentUser = "";
+        let userAttempts = {};
+        let examResults = [];
+        let reviewMode = false;
+        let examResultsData = null;
+
+        // Elementos del DOM
+        const loginScreen = document.getElementById('loginScreen');
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const examSection = document.getElementById('examSection');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const reviewScreen = document.getElementById('reviewScreen');
+        const academicScreen = document.getElementById('academicScreen');
+        const usernameInput = document.getElementById('username');
+        const loginBtn = document.getElementById('loginBtn');
+        const attemptsInfo = document.getElementById('attemptsInfo');
+        const displayUserName = document.getElementById('displayUserName');
+        const attemptNumber = document.getElementById('attemptNumber');
+        const startBtn = document.getElementById('startBtn');
+        const displayName = document.getElementById('displayName');
+        const displayAttempt = document.getElementById('displayAttempt');
+        const timerDisplay = document.querySelector('.timer');
+        const section1Grid = document.getElementById('section1Grid');
+        const section2Grid = document.getElementById('section2Grid');
+        const section3Grid = document.getElementById('section3Grid');
+        const section4Grid = document.getElementById('section4Grid');
+        const section5Grid = document.getElementById('section5Grid');
+        const section6Grid = document.getElementById('section6Grid');
+        const section7Grid = document.getElementById('section7Grid');
+        const questionTitle = document.getElementById('questionTitle');
+        const sectionIndicator = document.getElementById('sectionIndicator');
+        const questionText = document.getElementById('questionText');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const progressBar = document.getElementById('progressBar');
+        const correctCount = document.getElementById('correctCount');
+        const incorrectCount = document.getElementById('incorrectCount');
+        const sectionsResults = document.getElementById('sectionsResults');
+        const scoreMessage = document.getElementById('scoreMessage');
+        const resultName = document.getElementById('resultName');
+        const resultAttempt = document.getElementById('resultAttempt');
+        const reviewBtn = document.getElementById('reviewBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const reviewNavigation = document.getElementById('reviewNavigation');
+        const reviewQuestionsContainer = document.getElementById('reviewQuestionsContainer');
+        const backToResultsBtn = document.getElementById('backToResultsBtn');
+        const academicResults = document.getElementById('academicResults');
+        const backToLoginBtn = document.getElementById('backToLoginBtn');
+
+        // Inicializar el examen
+        loginBtn.addEventListener('click', loginUser);
+        startBtn.addEventListener('click', startExam);
+        prevBtn.addEventListener('click', showPrevQuestion);
+        nextBtn.addEventListener('click', showNextQuestion);
+        submitBtn.addEventListener('click', finishExam);
+        reviewBtn.addEventListener('click', showReview);
+        restartBtn.addEventListener('click', restartExam);
+        backToResultsBtn.addEventListener('click', () => {
+            reviewScreen.style.display = 'none';
+            resultsContainer.style.display = 'block';
+        });
+        backToLoginBtn.addEventListener('click', () => {
+            academicScreen.style.display = 'none';
+            loginScreen.style.display = 'block';
+        });
+
+        // Cargar intentos desde localStorage
+        function loadUserAttempts() {
+            const storedAttempts = localStorage.getItem('espochUserAttempts');
+            if (storedAttempts) {
+                userAttempts = JSON.parse(storedAttempts);
+            } else {
+                userAttempts = {};
+            }
+        }
+
+        // Cargar resultados desde localStorage
+        function loadExamResults() {
+            const storedResults = localStorage.getItem('espochExamResults');
+            if (storedResults) {
+                examResults = JSON.parse(storedResults);
+            } else {
+                examResults = [];
+            }
+        }
+
+        // Guardar intentos en localStorage
+        function saveUserAttempts() {
+            localStorage.setItem('espochUserAttempts', JSON.stringify(userAttempts));
+        }
+
+        // Guardar resultados en localStorage
+        function saveExamResults() {
+            localStorage.setItem('espochExamResults', JSON.stringify(examResults));
+        }
+
+        function loginUser() {
+            const username = usernameInput.value.trim().toUpperCase();
+            
+            if (!allowedUsers.includes(username)) {
+                alert("Usuario no autorizado. Contacta al administrador si crees que esto es un error.");
+                return;
+            }
+            
+            // Usuario ACADEMICO tiene acceso especial
+            if (username === "ACADEMICO") {
+                loadExamResults();
+                showAcademicResults();
+                return;
+            }
+            
+            loadUserAttempts();
+            
+            if (!userAttempts[username]) {
+                userAttempts[username] = 0;
+            }
+            
+            // TODOS los usuarios tienen intentos ilimitados
+            userAttempts[username]++;
+            saveUserAttempts();
+            
+            currentUser = username;
+            displayUserName.textContent = username;
+            attemptNumber.textContent = userAttempts[username];
+            
+            loginScreen.style.display = 'none';
+            welcomeScreen.style.display = 'block';
+        }
+
+        function showAcademicResults() {
+            loginScreen.style.display = 'none';
+            academicScreen.style.display = 'block';
+            
+            let html = '<h3>Resultados de todos los estudiantes</h3>';
+            
+            if (examResults.length === 0) {
+                html += '<p>No hay resultados disponibles.</p>';
+            } else {
+                html += `
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Estudiante</th>
+                            <th>Intento</th>
+                            <th>Fecha</th>
+                            <th>Dominio Verbal</th>
+                            <th>Dominio Matemático</th>
+                            <th>Química</th>
+                            <th>Biología</th>
+                            <th>Física</th>
+                            <th>Gestión</th>
+                            <th>Ciudadanía</th>
+                            <th>Total</th>
+                            <th>Porcentaje</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                `;
+                
+                examResults.forEach(result => {
+                    const totalCorrect = result.sectionScores["DOMINIO VERBAL"].correct +
+                                       result.sectionScores["DOMINIO MATEMÁTICO"].correct +
+                                       result.sectionScores["QUÍMICA"].correct +
+                                       result.sectionScores["BIOLOGÍA"].correct +
+                                       result.sectionScores["FÍSICA"].correct +
+                                       result.sectionScores["GESTIÓN Y EMPRENDIMIENTO"].correct +
+                                       result.sectionScores["EDUCACIÓN PARA LA CIUDADANÍA"].correct;
+                    
+                    const percentage = ((totalCorrect / 140) * 100).toFixed(2);
+                    
+                    html += `
+                    <tr>
+                        <td>${result.student}</td>
+                        <td>${result.attempt}</td>
+                        <td>${result.date}</td>
+                        <td class="section-score">${result.sectionScores["DOMINIO VERBAL"].correct}/20</td>
+                        <td class="section-score">${result.sectionScores["DOMINIO MATEMÁTICO"].correct}/20</td>
+                        <td class="section-score">${result.sectionScores["QUÍMICA"].correct}/20</td>
+                        <td class="section-score">${result.sectionScores["BIOLOGÍA"].correct}/20</td>
+                        <td class="section-score">${result.sectionScores["FÍSICA"].correct}/20</td>
+                        <td class="section-score">${result.sectionScores["GESTIÓN Y EMPRENDIMIENTO"].correct}/20</td>
+                        <td class="section-score">${result.sectionScores["EDUCACIÓN PARA LA CIUDADANÍA"].correct}/20</td>
+                        <td class="section-score">${totalCorrect}/140</td>
+                        <td class="section-score">${percentage}%</td>
+                    </tr>
+                    `;
+                });
+                
+                html += '</tbody></table>';
+            }
+            
+            academicResults.innerHTML = html;
+        }
+
+        function startExam() {
+            displayName.textContent = currentUser;
+            displayAttempt.textContent = userAttempts[currentUser];
+            resultName.textContent = currentUser;
+            resultAttempt.textContent = userAttempts[currentUser];
+            
+            welcomeScreen.style.display = 'none';
+            examSection.style.display = 'flex';
+            
+            // Inicializar respuestas
+            examData.forEach(question => {
+                studentAnswers[question.id] = null;
+            });
+            
+            // Crear navegación de preguntas
+            createQuestionNavigation();
+            
+            // Iniciar temporizador
+            startTimer();
+            
+            // Mostrar primera pregunta
+            showQuestion(currentQuestion);
+        }
+
+        function createQuestionNavigation() {
+            // Limpiar grids
+            section1Grid.innerHTML = '';
+            section2Grid.innerHTML = '';
+            section3Grid.innerHTML = '';
+            section4Grid.innerHTML = '';
+            section5Grid.innerHTML = '';
+            section6Grid.innerHTML = '';
+            section7Grid.innerHTML = '';
+            
+            examData.forEach((question, index) => {
+                const questionNumber = document.createElement('div');
+                questionNumber.className = 'question-number';
+                questionNumber.textContent = question.id;
+                questionNumber.dataset.index = index;
+                
+                questionNumber.addEventListener('click', () => {
+                    currentQuestion = index;
+                    showQuestion(currentQuestion);
+                });
+                
+                // Agregar a la sección correspondiente
+                if (question.id <= 20) {
+                    section1Grid.appendChild(questionNumber);
+                } else if (question.id <= 40) {
+                    section2Grid.appendChild(questionNumber);
+                } else if (question.id <= 60) {
+                    section3Grid.appendChild(questionNumber);
+                } else if (question.id <= 80) {
+                    section4Grid.appendChild(questionNumber);
+                } else if (question.id <= 100) {
+                    section5Grid.appendChild(questionNumber);
+                } else if (question.id <= 120) {
+                    section6Grid.appendChild(questionNumber);
+                } else {
+                    section7Grid.appendChild(questionNumber);
+                }
+            });
+        }
+
+        function showQuestion(index) {
+            // Actualizar estado de navegación
+            updateQuestionNavigation();
+            
+            const question = examData[index];
+            questionTitle.textContent = `Pregunta #${question.id}`;
+            sectionIndicator.textContent = question.section;
+            
+            // Construir el contenido de la pregunta
+            let questionHTML = `<p>${question.text}</p>`;
+            
+            // Agregar ecuación si existe
+            if (question.equation) {
+                questionHTML += `<div class="math-equation">${question.equation}</div>`;
+            }
+            
+            // Agregar segunda parte del texto si existe
+            if (question.text2) {
+                questionHTML += `<p>${question.text2}</p>`;
+            }
+            
+            // Agregar imagen si existe
+            if (question.image) {
+                questionHTML += `<img src="${question.image}" alt="Imagen de la pregunta" class="question-image">`;
+            }
+            
+            questionText.innerHTML = questionHTML;
+            
+            // Limpiar opciones anteriores
+            optionsContainer.innerHTML = '';
+            
+            // Crear opciones
+            question.options.forEach(option => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'option';
+                if (studentAnswers[question.id] === option.id) {
+                    optionElement.classList.add('selected');
+                }
+                
+                // Verificar si el texto de la opción contiene ecuaciones
+                const optionText = option.text;
+                const hasMath = optionText.includes('$') || optionText.includes('\\') || optionText.includes('{') || optionText.includes('}');
+                
+                optionElement.innerHTML = `
+                    <input type="radio" name="question-${question.id}" id="option-${option.id}" value="${option.id}" 
+                        ${studentAnswers[question.id] === option.id ? 'checked' : ''}>
+                    <div class="option-label">${option.id.toUpperCase()}.</div>
+                    <div class="option-text">${hasMath ? `\\(${optionText}\\)` : optionText}</div>
+                `;
+                
+                // Solo permitir seleccionar si no estamos en modo revisión
+                if (!reviewMode) {
+                    optionElement.addEventListener('click', () => {
+                        document.querySelectorAll('.option').forEach(opt => {
+                            opt.classList.remove('selected');
+                        });
+                        optionElement.classList.add('selected');
+                        studentAnswers[question.id] = option.id;
+                        updateQuestionNavigation();
+                    });
+                }
+                
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            // Reprocesar MathJax para renderizar ecuaciones
+            if (window.MathJax) {
+                MathJax.typesetPromise([questionText, optionsContainer]).catch((err) => {
+                    console.log('Error al procesar MathJax:', err);
+                    // Reintentar después de un breve retraso
+                    setTimeout(() => {
+                        if (window.MathJax) {
+                            MathJax.typesetPromise([questionText, optionsContainer]);
+                        }
+                    }, 100);
+                });
+            }
+            
+            // Actualizar botones de navegación
+            prevBtn.disabled = index === 0;
+            nextBtn.disabled = index === examData.length - 1;
+            
+            // Mostrar botón de envío en la última pregunta
+            submitBtn.style.display = index === examData.length - 1 ? 'block' : 'none';
+            nextBtn.style.display = index === examData.length - 1 ? 'none' : 'block';
+            
+            // Actualizar barra de progreso
+            updateProgressBar();
+        }
+
+        function updateQuestionNavigation() {
+            // Actualizar números de preguntas
+            document.querySelectorAll('.question-number').forEach((number, index) => {
+                number.classList.remove('active', 'answered', 'incorrect', 'unanswered');
+                if (index === currentQuestion) {
+                    number.classList.add('active');
+                }
+                const questionId = examData[index].id;
+                if (studentAnswers[questionId] !== null) {
+                    number.classList.add('answered');
+                }
+            });
+        }
+
+        function showPrevQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                showQuestion(currentQuestion);
+            }
+        }
+
+        function showNextQuestion() {
+            if (currentQuestion < examData.length - 1) {
+                currentQuestion++;
+                showQuestion(currentQuestion);
+            }
+        }
+
+        function startTimer() {
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    finishExam();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(3, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Cambiar color cuando quedan menos de 10 minutos
+            if (timeLeft < 600) {
+                timerDisplay.style.color = '#dc3545';
+            }
+        }
+
+        function updateProgressBar() {
+            const answeredCount = Object.values(studentAnswers).filter(answer => answer !== null).length;
+            const progress = (answeredCount / examData.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        function finishExam() {
+            clearInterval(timerInterval);
+            
+            // Calcular resultados
+            let correct = 0;
+            let incorrect = 0;
+            let unanswered = 0;
+            let sectionScores = {
+                "DOMINIO VERBAL": { correct: 0, total: 20, incorrect: 0, unanswered: 0 },
+                "DOMINIO MATEMÁTICO": { correct: 0, total: 20, incorrect: 0, unanswered: 0 },
+                "QUÍMICA": { correct: 0, total: 20, incorrect: 0, unanswered: 0 },
+                "BIOLOGÍA": { correct: 0, total: 20, incorrect: 0, unanswered: 0 },
+                "FÍSICA": { correct: 0, total: 20, incorrect: 0, unanswered: 0 },
+                "GESTIÓN Y EMPRENDIMIENTO": { correct: 0, total: 20, incorrect: 0, unanswered: 0 },
+                "EDUCACIÓN PARA LA CIUDADANÍA": { correct: 0, total: 20, incorrect: 0, unanswered: 0 }
+            };
+            
+            examData.forEach(question => {
+                const studentAnswer = studentAnswers[question.id];
+                if (studentAnswer !== null) {
+                    const selectedOption = question.options.find(opt => opt.id === studentAnswer);
+                    if (selectedOption && selectedOption.correct) {
+                        correct++;
+                        sectionScores[question.section].correct++;
+                    } else {
+                        incorrect++;
+                        sectionScores[question.section].incorrect++;
+                    }
+                } else {
+                    incorrect++;
+                    unanswered++;
+                    sectionScores[question.section].incorrect++;
+                    sectionScores[question.section].unanswered++;
+                }
+            });
+            
+            // Guardar resultados para revisión
+            examResultsData = {
+                student: currentUser,
+                attempt: userAttempts[currentUser],
+                date: new Date().toLocaleString(),
+                score: correct,
+                totalQuestions: examData.length,
+                sectionScores: sectionScores,
+                studentAnswers: {...studentAnswers},
+                questions: examData
+            };
+            
+            // Guardar resultados en localStorage
+            loadExamResults();
+            examResults.push(examResultsData);
+            saveExamResults();
+            
+            // Mostrar resultados
+            showResults(correct, incorrect, sectionScores);
+        }
+
+        function showResults(correct, incorrect, sectionScores) {
+            correctCount.textContent = correct;
+            incorrectCount.textContent = incorrect;
+            
+            // Mostrar resultados por materias
+            let sectionsHTML = '<h3>Resultados por Materias</h3>';
+            
+            // Dominio Verbal
+            sectionsHTML += `
+                <div class="section-result-item verbal">
+                    <div class="section-result-name">Dominio Verbal</div>
+                    <div class="section-result-score">${sectionScores["DOMINIO VERBAL"].correct}/20</div>
+                </div>
+            `;
+            
+            // Dominio Matemático
+            sectionsHTML += `
+                <div class="section-result-item matematica">
+                    <div class="section-result-name">Dominio Matemático</div>
+                    <div class="section-result-score">${sectionScores["DOMINIO MATEMÁTICO"].correct}/20</div>
+                </div>
+            `;
+            
+            // Química
+            sectionsHTML += `
+                <div class="section-result-item quimica">
+                    <div class="section-result-name">Química</div>
+                    <div class="section-result-score">${sectionScores["QUÍMICA"].correct}/20</div>
+                </div>
+            `;
+            
+            // Biología
+            sectionsHTML += `
+                <div class="section-result-item biologia">
+                    <div class="section-result-name">Biología</div>
+                    <div class="section-result-score">${sectionScores["BIOLOGÍA"].correct}/20</div>
+                </div>
+            `;
+            
+            // Física
+            sectionsHTML += `
+                <div class="section-result-item fisica">
+                    <div class="section-result-name">Física</div>
+                    <div class="section-result-score">${sectionScores["FÍSICA"].correct}/20</div>
+                </div>
+            `;
+            
+            // Gestión y Emprendimiento
+            sectionsHTML += `
+                <div class="section-result-item gestion">
+                    <div class="section-result-name">Gestión y Emprendimiento</div>
+                    <div class="section-result-score">${sectionScores["GESTIÓN Y EMPRENDIMIENTO"].correct}/20</div>
+                </div>
+            `;
+            
+            // Educación para la Ciudadanía
+            sectionsHTML += `
+                <div class="section-result-item ciudadania">
+                    <div class="section-result-name">Educación para la Ciudadanía</div>
+                    <div class="section-result-score">${sectionScores["EDUCACIÓN PARA LA CIUDADANÍA"].correct}/20</div>
+                </div>
+            `;
+            
+            sectionsResults.innerHTML = sectionsHTML;
+            
+            // Mostrar mensaje según el puntaje
+            const percentage = (correct / examData.length) * 100;
+            let message = "";
+            
+            if (percentage >= 90) {
+                message = "¡Excelente trabajo! Demostraste un dominio excepcional de los temas evaluados.";
+            } else if (percentage >= 70) {
+                message = "¡Buen trabajo! Tienes un buen conocimiento de los temas, pero hay espacio para mejorar.";
+            } else if (percentage >= 50) {
+                message = "Resultado aceptable. Te recomendamos revisar los temas donde tuviste dificultades.";
+            } else {
+                message = "Necesitas reforzar tus conocimientos. Te sugerimos estudiar más los temas evaluados.";
+            }
+            
+            scoreMessage.innerHTML = `
+                <h3>Tu puntuación total: ${correct}/${examData.length} (${Math.round(percentage)}%)</h3>
+                <p>${message}</p>
+                <p>Puedes revisar todas las preguntas haciendo clic en el botón "Revisar Examen Completo".</p>
+            `;
+            
+            examSection.style.display = 'none';
+            resultsContainer.style.display = 'block';
+        }
+
+        function showReview() {
+            resultsContainer.style.display = 'none';
+            reviewScreen.style.display = 'block';
+            reviewMode = true;
+            
+            // Crear navegación de revisión
+            createReviewNavigation();
+            
+            // Mostrar todas las preguntas en modo revisión
+            showAllReviewQuestions();
+        }
+
+        function createReviewNavigation() {
+            reviewNavigation.innerHTML = '';
+            
+            examData.forEach((question, index) => {
+                const questionNumber = document.createElement('div');
+                questionNumber.className = 'review-question-number';
+                questionNumber.textContent = question.id;
+                
+                // Determinar el estado de la pregunta
+                const studentAnswer = studentAnswers[question.id];
+                let isCorrect = false;
+                
+                if (studentAnswer !== null) {
+                    const selectedOption = question.options.find(opt => opt.id === studentAnswer);
+                    isCorrect = selectedOption ? selectedOption.correct : false;
+                    
+                    if (isCorrect) {
+                        questionNumber.classList.add('correct');
+                    } else {
+                        questionNumber.classList.add('incorrect');
+                    }
+                } else {
+                    questionNumber.classList.add('unanswered');
+                }
+                
+                questionNumber.addEventListener('click', () => {
+                    // Desplazar a la pregunta correspondiente
+                    const questionElement = document.getElementById(`review-question-${question.id}`);
+                    if (questionElement) {
+                        questionElement.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+                
+                reviewNavigation.appendChild(questionNumber);
+            });
+        }
+
+        function showAllReviewQuestions() {
+            reviewQuestionsContainer.innerHTML = '';
+            
+            examData.forEach((question, index) => {
+                const questionContainer = document.createElement('div');
+                questionContainer.className = 'review-question-container';
+                questionContainer.id = `review-question-${question.id}`;
+                
+                // Determinar el estado de la pregunta
+                const studentAnswer = studentAnswers[question.id];
+                let isCorrect = false;
+                let correctOption = null;
+                
+                // Encontrar la opción correcta
+                question.options.forEach(option => {
+                    if (option.correct) {
+                        correctOption = option;
+                    }
+                });
+                
+                if (studentAnswer !== null) {
+                    const selectedOption = question.options.find(opt => opt.id === studentAnswer);
+                    isCorrect = selectedOption ? selectedOption.correct : false;
+                }
+                
+                // Crear el encabezado de la pregunta
+                let statusHTML = '';
+                if (studentAnswer === null) {
+                    statusHTML = '<div class="review-status unanswered">NO RESPONDIDA</div>';
+                } else if (isCorrect) {
+                    statusHTML = '<div class="review-status correct">CORRECTA</div>';
+                } else {
+                    statusHTML = '<div class="review-status incorrect">INCORRECTA</div>';
+                }
+                
+                // Construir el contenido de la pregunta
+                let questionHTML = `<h3>Pregunta #${question.id} - ${question.section}</h3>`;
+                questionHTML += `<div class="question-text">${question.text}</div>`;
+                
+                // Agregar ecuación si existe
+                if (question.equation) {
+                    questionHTML += `<div class="math-equation">${question.equation}</div>`;
+                }
+                
+                // Agregar segunda parte del texto si existe
+                if (question.text2) {
+                    questionHTML += `<p>${question.text2}</p>`;
+                }
+                
+                // Agregar imagen si existe
+                if (question.image) {
+                    questionHTML += `<img src="${question.image}" alt="Imagen de la pregunta" class="question-image">`;
+                }
+                
+                // Crear opciones
+                let optionsHTML = '<div class="options-container">';
+                question.options.forEach(option => {
+                    let optionClass = 'option';
+                    let isSelected = studentAnswer === option.id;
+                    let isCorrectOption = option.correct;
+                    
+                    if (isSelected && isCorrectOption) {
+                        optionClass += ' correct';
+                    } else if (isSelected && !isCorrectOption) {
+                        optionClass += ' incorrect';
+                    } else if (!isSelected && isCorrectOption) {
+                        optionClass += ' correct';
+                    }
+                    
+                    // Verificar si el texto de la opción contiene ecuaciones
+                    const optionText = option.text;
+                    const hasMath = optionText.includes('$') || optionText.includes('\\') || optionText.includes('{') || optionText.includes('}');
+                    
+                    optionsHTML += `
+                        <div class="${optionClass}">
+                            <div class="option-label">${option.id.toUpperCase()}.</div>
+                            <div class="option-text">${hasMath ? `\\(${optionText}\\)` : optionText}</div>
+                            ${option.correct ? '<span style="color: #28a745; margin-left: 10px;">✓</span>' : ''}
+                        </div>
+                    `;
+                });
+                optionsHTML += '</div>';
+                
+                // Crear explicación
+                let explanationHTML = '';
+                if (studentAnswer === null) {
+                    explanationHTML = `
+                        <div class="answer-explanation">
+                            <h4>Respuesta no seleccionada</h4>
+                            <p>No seleccionaste ninguna opción para esta pregunta.</p>
+                            <p><strong>Respuesta correcta:</strong> ${correctOption.id.toUpperCase()}. ${correctOption.text}</p>
+                        </div>
+                    `;
+                } else if (!isCorrect) {
+                    const selectedOption = question.options.find(opt => opt.id === studentAnswer);
+                    explanationHTML = `
+                        <div class="answer-explanation">
+                            <h4>Tu respuesta fue incorrecta</h4>
+                            <p><strong>Seleccionaste:</strong> ${selectedOption.id.toUpperCase()}. ${selectedOption.text}</p>
+                            <p><strong>Respuesta correcta:</strong> ${correctOption.id.toUpperCase()}. ${correctOption.text}</p>
+                        </div>
+                    `;
+                } else {
+                    explanationHTML = `
+                        <div class="answer-explanation">
+                            <h4>Tu respuesta fue correcta</h4>
+                            <p><strong>Respuesta correcta:</strong> ${correctOption.id.toUpperCase()}. ${correctOption.text}</p>
+                        </div>
+                    `;
+                }
+                
+                questionContainer.innerHTML = `
+                    <div class="review-question-header">
+                        <h3>Pregunta #${question.id} - ${question.section}</h3>
+                        ${statusHTML}
+                    </div>
+                    ${questionHTML}
+                    ${optionsHTML}
+                    ${explanationHTML}
+                `;
+                
+                reviewQuestionsContainer.appendChild(questionContainer);
+            });
+            
+            // Reprocesar MathJax para renderizar ecuaciones
+            if (window.MathJax) {
+                MathJax.typesetPromise([reviewQuestionsContainer]).catch((err) => {
+                    console.log('Error al procesar MathJax:', err);
+                    // Reintentar después de un breve retraso
+                    setTimeout(() => {
+                        if (window.MathJax) {
+                            MathJax.typesetPromise([reviewQuestionsContainer]);
+                        }
+                    }, 100);
+                });
+            }
+        }
+
+        function restartExam() {
+            // Reiniciar variables
+            currentQuestion = 0;
+            studentAnswers = {};
+            timeLeft = 150 * 60;
+            reviewMode = false;
+            examResultsData = null;
+            
+            // Restablecer la interfaz
+            resultsContainer.style.display = 'none';
+            reviewScreen.style.display = 'none';
+            loginScreen.style.display = 'block';
+            usernameInput.value = '';
+            timerDisplay.style.color = '#ffcc00';
+        }
+
+        // Inicializar datos al cargar la página
+        loadUserAttempts();
+        loadExamResults();
+    </script>
+</body>
+</html>
